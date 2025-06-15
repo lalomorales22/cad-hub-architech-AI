@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { CADGenerationResult } from '../services/aiServices';
@@ -110,10 +109,11 @@ class OrbitControls {
   onMouseWheel(event: WheelEvent) {
     event.preventDefault();
     
+    // Flipped zoom direction: negative deltaY (scroll up) = zoom in, positive deltaY (scroll down) = zoom out
     if (event.deltaY < 0) {
-      this.dollyIn(this.getZoomScale());
+      this.dollyOut(this.getZoomScale()); // zoom in when scrolling up
     } else if (event.deltaY > 0) {
-      this.dollyOut(this.getZoomScale());
+      this.dollyIn(this.getZoomScale()); // zoom out when scrolling down
     }
     
     this.update();
