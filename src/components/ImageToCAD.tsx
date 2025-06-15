@@ -191,9 +191,9 @@ export const ImageToCAD = () => {
   const selectedImage = uploadedImages.find(img => img.id === selectedImageId);
 
   return (
-    <div className="h-full flex bg-gray-900">
+    <div className="h-full flex bg-gray-900 max-h-screen overflow-hidden">
       {/* Left Panel - Image Upload & History */}
-      <div className="w-80 border-r border-gray-700 bg-gray-800/30 flex flex-col">
+      <div className="w-80 border-r border-gray-700 bg-gray-800/30 flex flex-col max-h-full">
         {/* API Key Status */}
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center gap-2 mb-2">
@@ -284,8 +284,8 @@ export const ImageToCAD = () => {
           </div>
         </div>
 
-        {/* Uploaded Images */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        {/* Uploaded Images - Made scrollable */}
+        <div className="flex-1 p-4 overflow-y-auto min-h-0">
           <h3 className="text-white font-semibold mb-3">Recent Uploads</h3>
           <div className="space-y-3">
             {uploadedImages.map((image) => (
@@ -374,7 +374,7 @@ export const ImageToCAD = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 flex-shrink-0">
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:text-white">
               <Save className="h-3 w-3 mr-1" />
@@ -389,9 +389,10 @@ export const ImageToCAD = () => {
       </div>
 
       {/* Main Canvas Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col max-h-full overflow-hidden">
         {/* Canvas Header */}
-        <div className="h-14 bg-gray-800/50 border-b border-gray-700 flex items-center justify-between px-6">
+        <div className="h-14 bg-gray-800/50 border-b border-gray-700 flex items-center justify-between px-6 flex-shrink-0">
+          {/* ... keep existing code (header content) */}
           <div className="flex items-center space-x-4">
             <h2 className="text-white font-semibold">Image-to-CAD Workspace</h2>
             <Badge variant="secondary" className="bg-purple-600/20 text-purple-400">
@@ -410,8 +411,8 @@ export const ImageToCAD = () => {
           </div>
         </div>
 
-        {/* 3D Canvas */}
-        <div className="flex-1 relative bg-gray-900">
+        {/* 3D Canvas - Adjusted height calculation */}
+        <div className="flex-1 relative bg-gray-900 min-h-0" style={{ height: 'calc(100% - 140px)' }}>
           <ThreeJSCanvas cadData={currentGeneration} />
           
           {/* Canvas Overlay Info */}
@@ -443,8 +444,8 @@ export const ImageToCAD = () => {
           </div>
         </div>
 
-        {/* Generate Section */}
-        <div className="h-32 bg-gray-800/50 border-t border-gray-700 p-4">
+        {/* Generate Section - Fixed height */}
+        <div className="h-36 bg-gray-800/50 border-t border-gray-700 p-4 flex-shrink-0">
           <div className="h-full flex items-center space-x-4">
             {/* Selected Image Preview */}
             {selectedImage && (

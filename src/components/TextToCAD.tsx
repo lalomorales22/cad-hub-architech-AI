@@ -182,9 +182,9 @@ export const TextToCAD = () => {
   ];
 
   return (
-    <div className="h-full flex bg-gray-900">
+    <div className="h-full flex bg-gray-900 max-h-screen overflow-hidden">
       {/* Left Panel - History & Tools */}
-      <div className="w-80 border-r border-gray-700 bg-gray-800/30 flex flex-col">
+      <div className="w-80 border-r border-gray-700 bg-gray-800/30 flex flex-col max-h-full">
         {/* API Key Status */}
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center gap-2 mb-2">
@@ -270,8 +270,8 @@ export const TextToCAD = () => {
           </div>
         </div>
 
-        {/* Generation History */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        {/* Generation History - Made scrollable */}
+        <div className="flex-1 p-4 overflow-y-auto min-h-0">
           <h3 className="text-white font-semibold mb-3">Generation History</h3>
           <div className="space-y-3">
             {generationHistory.map((item) => (
@@ -315,7 +315,7 @@ export const TextToCAD = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 flex-shrink-0">
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:text-white">
               <Save className="h-3 w-3 mr-1" />
@@ -330,9 +330,10 @@ export const TextToCAD = () => {
       </div>
 
       {/* Main Canvas Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col max-h-full overflow-hidden">
         {/* Canvas Header */}
-        <div className="h-14 bg-gray-800/50 border-b border-gray-700 flex items-center justify-between px-6">
+        <div className="h-14 bg-gray-800/50 border-b border-gray-700 flex items-center justify-between px-6 flex-shrink-0">
+          {/* Canvas Header */}
           <div className="flex items-center space-x-4">
             <h2 className="text-white font-semibold">Text-to-CAD Workspace</h2>
             <Badge variant="secondary" className="bg-cyan-600/20 text-cyan-400">
@@ -373,8 +374,8 @@ export const TextToCAD = () => {
           </div>
         </div>
 
-        {/* 3D Canvas */}
-        <div className="flex-1 relative bg-gray-900">
+        {/* 3D Canvas - Adjusted height calculation */}
+        <div className="flex-1 relative bg-gray-900 min-h-0" style={{ height: 'calc(100% - 140px)' }}>
           <ThreeJSCanvas cadData={currentGeneration} />
           
           {/* Canvas Overlay Info */}
@@ -406,8 +407,8 @@ export const TextToCAD = () => {
           </div>
         </div>
 
-        {/* Prompt Input Area */}
-        <div className="h-32 bg-gray-800/50 border-t border-gray-700 p-4">
+        {/* Prompt Input Area - Fixed height */}
+        <div className="h-36 bg-gray-800/50 border-t border-gray-700 p-4 flex-shrink-0">
           <div className="h-full flex space-x-4">
             <div className="flex-1 flex flex-col">
               <label className="text-sm text-gray-400 mb-2">Describe what you want to create:</label>
