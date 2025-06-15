@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,7 +13,8 @@ import {
   Settings, 
   HelpCircle,
   Bell,
-  Clock
+  Clock,
+  User
 } from "lucide-react";
 
 interface SidebarProps {
