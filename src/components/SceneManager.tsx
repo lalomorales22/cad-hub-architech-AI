@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,7 @@ interface SceneObject {
   visible: boolean;
   locked: boolean;
   position: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
 }
 
 interface SceneManagerProps {

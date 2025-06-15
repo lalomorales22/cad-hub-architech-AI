@@ -42,6 +42,7 @@ interface SceneObject {
   visible: boolean;
   locked: boolean;
   position: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
   cadData?: any;
 }
 
@@ -82,6 +83,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
       visible: true,
       locked: false,
       position: { x: 0, y: 0, z: 0 },
+      scale: { x: 1, y: 1, z: 1 },
       cadData: modelData
     };
     
@@ -99,6 +101,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
       visible: true,
       locked: false,
       position: { x: 0, y: 0, z: 0 },
+      scale: { x: 1, y: 1, z: 1 },
       cadData: aiCadData
     };
     
@@ -121,6 +124,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         visible: true,
         locked: false,
         position: { x: 0, y: 0, z: 0 },
+        scale: { x: 1, y: 1, z: 1 },
         cadData: {
           id: crypto.randomUUID(),
           description: `Basic ${tool}`,
