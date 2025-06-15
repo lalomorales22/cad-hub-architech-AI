@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,31 +29,64 @@ export const SettingsPage = () => {
   const [notifications, setNotifications] = useState(true);
   const [theme, setTheme] = useState("dark");
   const [language, setLanguage] = useState("en");
+  
+  // Existing API keys
   const [openAIKey, setOpenAIKey] = useState("");
   const [anthropicKey, setAnthropicKey] = useState("");
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [showAnthropicKey, setShowAnthropicKey] = useState(false);
+  
+  // New AI API keys
+  const [falAIKey, setFalAIKey] = useState("");
+  const [stabilityAIKey, setStabilityAIKey] = useState("");
+  const [replicateKey, setReplicateKey] = useState("");
+  const [deepMindKey, setDeepMindKey] = useState("");
+  const [showFalAIKey, setShowFalAIKey] = useState(false);
+  const [showStabilityAIKey, setShowStabilityAIKey] = useState(false);
+  const [showReplicateKey, setShowReplicateKey] = useState(false);
+  const [showDeepMindKey, setShowDeepMindKey] = useState(false);
 
   useEffect(() => {
-    // Load API keys from localStorage
+    // Load all API keys from localStorage
     const savedOpenAIKey = localStorage.getItem('openai_api_key');
     const savedAnthropicKey = localStorage.getItem('anthropic_api_key');
+    const savedFalAIKey = localStorage.getItem('fal_ai_api_key');
+    const savedStabilityAIKey = localStorage.getItem('stability_ai_api_key');
+    const savedReplicateKey = localStorage.getItem('replicate_api_key');
+    const savedDeepMindKey = localStorage.getItem('deepmind_api_key');
+    
     if (savedOpenAIKey) setOpenAIKey(savedOpenAIKey);
     if (savedAnthropicKey) setAnthropicKey(savedAnthropicKey);
+    if (savedFalAIKey) setFalAIKey(savedFalAIKey);
+    if (savedStabilityAIKey) setStabilityAIKey(savedStabilityAIKey);
+    if (savedReplicateKey) setReplicateKey(savedReplicateKey);
+    if (savedDeepMindKey) setDeepMindKey(savedDeepMindKey);
   }, []);
 
   const saveAPIKeys = () => {
     localStorage.setItem('openai_api_key', openAIKey);
     localStorage.setItem('anthropic_api_key', anthropicKey);
-    toast.success("API keys saved successfully!");
+    localStorage.setItem('fal_ai_api_key', falAIKey);
+    localStorage.setItem('stability_ai_api_key', stabilityAIKey);
+    localStorage.setItem('replicate_api_key', replicateKey);
+    localStorage.setItem('deepmind_api_key', deepMindKey);
+    toast.success("All API keys saved successfully!");
   };
 
   const clearAPIKeys = () => {
     setOpenAIKey("");
     setAnthropicKey("");
+    setFalAIKey("");
+    setStabilityAIKey("");
+    setReplicateKey("");
+    setDeepMindKey("");
     localStorage.removeItem('openai_api_key');
     localStorage.removeItem('anthropic_api_key');
-    toast.success("API keys cleared!");
+    localStorage.removeItem('fal_ai_api_key');
+    localStorage.removeItem('stability_ai_api_key');
+    localStorage.removeItem('replicate_api_key');
+    localStorage.removeItem('deepmind_api_key');
+    toast.success("All API keys cleared!");
   };
 
   return (
@@ -231,10 +263,11 @@ export const SettingsPage = () => {
                   <Key className="h-5 w-5" />
                   AI API Keys
                 </CardTitle>
-                <CardDescription>Manage your API keys for AI-powered CAD generation</CardDescription>
+                <CardDescription>Manage your API keys for AI-powered CAD generation and analysis</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* OpenAI */}
                   <div className="space-y-2">
                     <Label className="text-gray-300">OpenAI API Key</Label>
                     <div className="relative">
@@ -255,9 +288,10 @@ export const SettingsPage = () => {
                         {showOpenAIKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500">Used for text-to-CAD generation</p>
+                    <p className="text-xs text-gray-500">Text-to-CAD generation & chat</p>
                   </div>
-                  
+
+                  {/* Anthropic */}
                   <div className="space-y-2">
                     <Label className="text-gray-300">Anthropic API Key</Label>
                     <div className="relative">
@@ -278,27 +312,125 @@ export const SettingsPage = () => {
                         {showAnthropicKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500">Used for image-to-CAD analysis and generation</p>
+                    <p className="text-xs text-gray-500">Image-to-CAD analysis</p>
+                  </div>
+
+                  {/* Fal.AI */}
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">Fal.AI API Key</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showFalAIKey ? "text" : "password"}
+                        placeholder="fal_..." 
+                        value={falAIKey}
+                        onChange={(e) => setFalAIKey(e.target.value)}
+                        className="bg-gray-900 border-gray-600 text-white pr-10" 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={() => setShowFalAIKey(!showFalAIKey)}
+                      >
+                        {showFalAIKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">Real-time 3D model generation</p>
+                  </div>
+
+                  {/* Stability AI */}
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">Stability AI API Key</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showStabilityAIKey ? "text" : "password"}
+                        placeholder="sk-..." 
+                        value={stabilityAIKey}
+                        onChange={(e) => setStabilityAIKey(e.target.value)}
+                        className="bg-gray-900 border-gray-600 text-white pr-10" 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={() => setShowStabilityAIKey(!showStabilityAIKey)}
+                      >
+                        {showStabilityAIKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">Advanced image generation & editing</p>
+                  </div>
+
+                  {/* Replicate */}
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">Replicate API Key</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showReplicateKey ? "text" : "password"}
+                        placeholder="r8_..." 
+                        value={replicateKey}
+                        onChange={(e) => setReplicateKey(e.target.value)}
+                        className="bg-gray-900 border-gray-600 text-white pr-10" 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={() => setShowReplicateKey(!showReplicateKey)}
+                      >
+                        {showReplicateKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">Machine learning models & 3D processing</p>
+                  </div>
+
+                  {/* DeepMind */}
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">DeepMind API Key</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showDeepMindKey ? "text" : "password"}
+                        placeholder="dm_..." 
+                        value={deepMindKey}
+                        onChange={(e) => setDeepMindKey(e.target.value)}
+                        className="bg-gray-900 border-gray-600 text-white pr-10" 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={() => setShowDeepMindKey(!showDeepMindKey)}
+                      >
+                        {showDeepMindKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">Protein folding & structural analysis</p>
                   </div>
                 </div>
 
                 <div className="flex gap-2">
                   <Button onClick={saveAPIKeys} className="bg-cyan-600 hover:bg-cyan-500">
-                    Save API Keys
+                    Save All API Keys
                   </Button>
                   <Button variant="outline" onClick={clearAPIKeys} className="border-gray-600 text-gray-300 hover:text-white">
-                    Clear Keys
+                    Clear All Keys
                   </Button>
                 </div>
 
                 <div className="bg-blue-600/10 border border-blue-600/20 rounded-lg p-4">
                   <h4 className="text-blue-400 font-medium mb-2">API Key Information</h4>
                   <ul className="text-sm text-gray-300 space-y-1">
-                    <li>• OpenAI keys are used for natural language processing and CAD generation</li>
-                    <li>• Anthropic keys are used for advanced image analysis and interpretation</li>
-                    <li>• Keys are stored locally in your browser and never sent to our servers</li>
-                    <li>• You can get OpenAI keys from platform.openai.com</li>
-                    <li>• You can get Anthropic keys from console.anthropic.com</li>
+                    <li>• <strong>OpenAI:</strong> Get keys from platform.openai.com</li>
+                    <li>• <strong>Anthropic:</strong> Get keys from console.anthropic.com</li>
+                    <li>• <strong>Fal.AI:</strong> Get keys from fal.ai/dashboard</li>
+                    <li>• <strong>Stability AI:</strong> Get keys from platform.stability.ai</li>
+                    <li>• <strong>Replicate:</strong> Get keys from replicate.com/account</li>
+                    <li>• <strong>DeepMind:</strong> Get keys from deepmind.com/api</li>
+                    <li>• All keys are stored locally and never sent to our servers</li>
                   </ul>
                 </div>
               </CardContent>
