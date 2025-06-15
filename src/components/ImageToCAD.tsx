@@ -3,6 +3,9 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { 
   Upload, 
   Image as ImageIcon, 
@@ -15,14 +18,27 @@ import {
   Layers,
   ZoomIn,
   ZoomOut,
-  RotateCcw
+  RotateCcw,
+  AlertCircle,
+  Eye
 } from "lucide-react";
 import { ThreeJSCanvas } from "./ThreeJSCanvas";
+import { aiService, CADGenerationResult } from "../services/aiServices";
+
+interface UploadedImage {
+  id: number;
+  name: string;
+  url: string;
+  status: string;
+  result?: CADGenerationResult;
+}
 
 export const ImageToCAD = () => {
-  const [uploadedImages, setUploadedImages] = useState<Array<{id: number, name: string, url: string, status: string}>>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [currentGeneration, setCurrentGeneration] = useState<CADGenerationResult | null>(null);
+  const [analysisPrompt, setAnalysisPrompt] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (files: FileList | null) => {
@@ -31,7 +47,7 @@ export const ImageToCAD = () => {
     Array.from(files).forEach((file) => {
       if (file.type.startsWith('image/')) {
         const url = URL.createObjectURL(file);
-        const newImage = {
+        const newImage: UploadedImage = {
           id: Date.now() + Math.random(),
           name: file.name,
           url,
@@ -58,7 +74,16 @@ export const ImageToCAD = () => {
     setDragActive(false);
   };
 
-  const processImage = (imageId: number) => {
+  const processImage = async (imageId: number) => {
+    const anthropicKey = localStorage.getItem('anthropic_api_key');
+    if (!anthropicKey) {
+      toast.error("Anthropic API key required. Please add it in Settings.");
+      return;
+    }
+
+    const image = uploadedImages.find(img => img.id === imageId);
+    if (!image) return;
+
     setIsProcessing(true);
     setUploadedImages(prev => 
       prev.map(img => 
@@ -66,19 +91,39 @@ export const ImageToCAD = () => {
       )
     );
 
-    // Simulate AI processing
-    setTimeout(() => {
+    try {
+      const result = await aiService.generateCADFromImage({
+        imageUrl: image.url,
+        prompt: analysisPrompt || undefined,
+        analysisType: 'architectural'
+      });
+
+      setCurrentGeneration(result);
       setUploadedImages(prev => 
         prev.map(img => 
-          img.id === imageId ? { ...img, status: 'completed' } : img
+          img.id === imageId ? { ...img, status: 'completed', result } : img
         )
       );
+      toast.success("CAD model generated from image!");
+    } catch (error) {
+      console.error('Image processing failed:', error);
+      setUploadedImages(prev => 
+        prev.map(img => 
+          img.id === imageId ? { ...img, status: 'failed' } : img
+        )
+      );
+    } finally {
       setIsProcessing(false);
-    }, 4000);
+    }
   };
 
   const removeImage = (imageId: number) => {
     setUploadedImages(prev => prev.filter(img => img.id !== imageId));
+  };
+
+  const loadGeneration = (result: CADGenerationResult) => {
+    setCurrentGeneration(result);
+    toast.success("CAD model loaded");
   };
 
   const viewTools = [
@@ -93,6 +138,36 @@ export const ImageToCAD = () => {
     <div className="h-full flex bg-gray-900">
       {/* Left Panel - Image Upload & History */}
       <div className="w-80 border-r border-gray-700 bg-gray-800/30 flex flex-col">
+        {/* API Key Status */}
+        <div className="p-4 border-b border-gray-700">
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`w-2 h-2 rounded-full ${localStorage.getItem('anthropic_api_key') ? 'bg-green-500' : 'bg-red-500'}`} />
+            <span className="text-sm text-gray-300">
+              {localStorage.getItem('anthropic_api_key') ? 'Anthropic Connected' : 'API Key Required'}
+            </span>
+          </div>
+          {!localStorage.getItem('anthropic_api_key') && (
+            <p className="text-xs text-amber-400 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              Add Anthropic API key in Settings
+            </p>
+          )}
+        </div>
+
+        {/* Analysis Prompt */}
+        <div className="p-4 border-b border-gray-700">
+          <h3 className="text-white font-semibold mb-3">Analysis Prompt</h3>
+          <div className="space-y-2">
+            <Label className="text-gray-300 text-sm">Additional Context (Optional)</Label>
+            <Textarea
+              value={analysisPrompt}
+              onChange={(e) => setAnalysisPrompt(e.target.value)}
+              placeholder="e.g., Focus on the building structure, ignore landscaping..."
+              className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 h-20 resize-none"
+            />
+          </div>
+        </div>
+
         {/* Upload Area */}
         <div className="p-4 border-b border-gray-700">
           <h3 className="text-white font-semibold mb-3">Upload Images</h3>
@@ -173,6 +248,7 @@ export const ImageToCAD = () => {
                           className={`text-xs ${
                             image.status === 'completed' ? 'bg-green-600/20 text-green-400' : 
                             image.status === 'processing' ? 'bg-yellow-600/20 text-yellow-400' :
+                            image.status === 'failed' ? 'bg-red-600/20 text-red-400' :
                             'bg-blue-600/20 text-blue-400'
                           }`}
                         >
@@ -188,17 +264,29 @@ export const ImageToCAD = () => {
                         </Button>
                       </div>
                       <p className="text-sm text-gray-300 truncate mb-2">{image.name}</p>
-                      {image.status === 'uploaded' && (
-                        <Button
-                          size="sm"
-                          onClick={() => processImage(image.id)}
-                          disabled={isProcessing}
-                          className="h-6 bg-cyan-600 hover:bg-cyan-500 text-white text-xs"
-                        >
-                          <Zap className="h-3 w-3 mr-1" />
-                          Process
-                        </Button>
-                      )}
+                      <div className="flex gap-1">
+                        {image.status === 'uploaded' && (
+                          <Button
+                            size="sm"
+                            onClick={() => processImage(image.id)}
+                            disabled={isProcessing || !localStorage.getItem('anthropic_api_key')}
+                            className="h-6 bg-cyan-600 hover:bg-cyan-500 text-white text-xs"
+                          >
+                            <Zap className="h-3 w-3 mr-1" />
+                            Process
+                          </Button>
+                        )}
+                        {image.result && (
+                          <Button
+                            size="sm"
+                            onClick={() => loadGeneration(image.result!)}
+                            className="h-6 bg-green-600 hover:bg-green-500 text-white text-xs"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -238,6 +326,11 @@ export const ImageToCAD = () => {
             <Badge variant="secondary" className="bg-purple-600/20 text-purple-400">
               Vision AI
             </Badge>
+            {currentGeneration && (
+              <Badge variant="secondary" className="bg-green-600/20 text-green-400">
+                Model Loaded
+              </Badge>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
@@ -248,12 +341,16 @@ export const ImageToCAD = () => {
 
         {/* 3D Canvas */}
         <div className="flex-1 relative bg-gray-900">
-          <ThreeJSCanvas />
+          <ThreeJSCanvas cadData={currentGeneration} />
           
           {/* Canvas Overlay Info */}
           <div className="absolute top-4 left-4 bg-gray-900/90 backdrop-blur-sm rounded-lg p-3 border border-gray-700">
-            <div className="text-white text-sm font-medium">Active Project</div>
-            <div className="text-gray-400 text-xs">Image-to-CAD Generation</div>
+            <div className="text-white text-sm font-medium">
+              {currentGeneration ? currentGeneration.description : "Image-to-CAD Generation"}
+            </div>
+            <div className="text-gray-400 text-xs">
+              {currentGeneration ? `Generated ${currentGeneration.metadata.timestamp}` : "Upload images to begin"}
+            </div>
           </div>
 
           {/* Processing Indicator */}

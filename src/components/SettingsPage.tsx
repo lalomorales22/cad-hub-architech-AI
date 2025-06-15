@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { 
   User, 
   Monitor, 
@@ -19,7 +20,9 @@ import {
   Database,
   Key,
   Globe,
-  Zap
+  Zap,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 export const SettingsPage = () => {
@@ -27,6 +30,32 @@ export const SettingsPage = () => {
   const [notifications, setNotifications] = useState(true);
   const [theme, setTheme] = useState("dark");
   const [language, setLanguage] = useState("en");
+  const [openAIKey, setOpenAIKey] = useState("");
+  const [anthropicKey, setAnthropicKey] = useState("");
+  const [showOpenAIKey, setShowOpenAIKey] = useState(false);
+  const [showAnthropicKey, setShowAnthropicKey] = useState(false);
+
+  useEffect(() => {
+    // Load API keys from localStorage
+    const savedOpenAIKey = localStorage.getItem('openai_api_key');
+    const savedAnthropicKey = localStorage.getItem('anthropic_api_key');
+    if (savedOpenAIKey) setOpenAIKey(savedOpenAIKey);
+    if (savedAnthropicKey) setAnthropicKey(savedAnthropicKey);
+  }, []);
+
+  const saveAPIKeys = () => {
+    localStorage.setItem('openai_api_key', openAIKey);
+    localStorage.setItem('anthropic_api_key', anthropicKey);
+    toast.success("API keys saved successfully!");
+  };
+
+  const clearAPIKeys = () => {
+    setOpenAIKey("");
+    setAnthropicKey("");
+    localStorage.removeItem('openai_api_key');
+    localStorage.removeItem('anthropic_api_key');
+    toast.success("API keys cleared!");
+  };
 
   return (
     <div className="h-full p-6 overflow-y-auto">
@@ -52,7 +81,7 @@ export const SettingsPage = () => {
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Security
+              AI Settings
             </TabsTrigger>
             <TabsTrigger value="advanced" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
@@ -200,18 +229,77 @@ export const SettingsPage = () => {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Key className="h-5 w-5" />
-                  API Keys
+                  AI API Keys
                 </CardTitle>
-                <CardDescription>Manage your API keys for AI integrations</CardDescription>
+                <CardDescription>Manage your API keys for AI-powered CAD generation</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-gray-300">OpenAI API Key</Label>
-                  <Input type="password" placeholder="sk-..." className="bg-gray-900 border-gray-600 text-white" />
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">OpenAI API Key</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showOpenAIKey ? "text" : "password"}
+                        placeholder="sk-..." 
+                        value={openAIKey}
+                        onChange={(e) => setOpenAIKey(e.target.value)}
+                        className="bg-gray-900 border-gray-600 text-white pr-10" 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={() => setShowOpenAIKey(!showOpenAIKey)}
+                      >
+                        {showOpenAIKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">Used for text-to-CAD generation</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">Anthropic API Key</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showAnthropicKey ? "text" : "password"}
+                        placeholder="sk-ant-..." 
+                        value={anthropicKey}
+                        onChange={(e) => setAnthropicKey(e.target.value)}
+                        className="bg-gray-900 border-gray-600 text-white pr-10" 
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={() => setShowAnthropicKey(!showAnthropicKey)}
+                      >
+                        {showAnthropicKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">Used for image-to-CAD analysis and generation</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-300">Claude API Key</Label>
-                  <Input type="password" placeholder="..." className="bg-gray-900 border-gray-600 text-white" />
+
+                <div className="flex gap-2">
+                  <Button onClick={saveAPIKeys} className="bg-cyan-600 hover:bg-cyan-500">
+                    Save API Keys
+                  </Button>
+                  <Button variant="outline" onClick={clearAPIKeys} className="border-gray-600 text-gray-300 hover:text-white">
+                    Clear Keys
+                  </Button>
+                </div>
+
+                <div className="bg-blue-600/10 border border-blue-600/20 rounded-lg p-4">
+                  <h4 className="text-blue-400 font-medium mb-2">API Key Information</h4>
+                  <ul className="text-sm text-gray-300 space-y-1">
+                    <li>• OpenAI keys are used for natural language processing and CAD generation</li>
+                    <li>• Anthropic keys are used for advanced image analysis and interpretation</li>
+                    <li>• Keys are stored locally in your browser and never sent to our servers</li>
+                    <li>• You can get OpenAI keys from platform.openai.com</li>
+                    <li>• You can get Anthropic keys from console.anthropic.com</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>

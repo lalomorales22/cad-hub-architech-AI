@@ -1,178 +1,205 @@
 
-import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { CADGenerationResult } from '../services/aiServices';
 
-export const ThreeJSCanvas = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [scene, setScene] = useState<THREE.Scene | null>(null);
+interface ThreeJSCanvasProps {
+  cadData?: CADGenerationResult | null;
+}
+
+export const ThreeJSCanvas = ({ cadData }: ThreeJSCanvasProps) => {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const cadObjectsRef = useRef<THREE.Group | null>(null);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!mountRef.current) return;
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
-    
+    scene.background = new THREE.Color(0x1a1a1a);
+    sceneRef.current = scene;
+
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
       75,
-      canvasRef.current.clientWidth / canvasRef.current.clientHeight,
+      mountRef.current.clientWidth / mountRef.current.clientHeight,
       0.1,
       1000
     );
     camera.position.set(5, 5, 5);
+    camera.lookAt(0, 0, 0);
+    cameraRef.current = camera;
 
     // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ 
-      canvas: canvasRef.current,
-      antialias: true,
-      alpha: true
-    });
-    renderer.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    rendererRef.current = renderer;
+
+    mountRef.current.appendChild(renderer.domElement);
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(10, 10, 5);
     directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
     scene.add(directionalLight);
 
-    // Grid helper
-    const gridHelper = new THREE.GridHelper(20, 20, 0x00ffff, 0x444444);
-    gridHelper.material.opacity = 0.3;
-    gridHelper.material.transparent = true;
+    // Grid
+    const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
     scene.add(gridHelper);
 
-    // Sample architecture - simple building
-    const buildingGroup = new THREE.Group();
-    
-    // Base/foundation
-    const baseGeometry = new THREE.BoxGeometry(4, 0.2, 3);
-    const baseMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
-    const base = new THREE.Mesh(baseGeometry, baseMaterial);
-    base.position.y = 0.1;
-    buildingGroup.add(base);
+    // Controls (basic mouse interaction)
+    let mouseX = 0;
+    let mouseY = 0;
+    let isMouseDown = false;
 
-    // Main structure
-    const wallGeometry = new THREE.BoxGeometry(4, 2, 3);
-    const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x888888 });
-    const walls = new THREE.Mesh(wallGeometry, wallMaterial);
-    walls.position.y = 1;
-    buildingGroup.add(walls);
-
-    // Roof
-    const roofGeometry = new THREE.BoxGeometry(4.2, 0.2, 3.2);
-    const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
-    const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-    roof.position.y = 2.1;
-    buildingGroup.add(roof);
-
-    // Windows (as wireframes)
-    const windowGeometry = new THREE.PlaneGeometry(0.8, 1.2);
-    const windowMaterial = new THREE.MeshBasicMaterial({ 
-      color: 0x00ffff, 
-      transparent: true, 
-      opacity: 0.6,
-      side: THREE.DoubleSide
-    });
-    
-    // Front windows
-    const window1 = new THREE.Mesh(windowGeometry, windowMaterial);
-    window1.position.set(-0.8, 1.2, 1.51);
-    buildingGroup.add(window1);
-    
-    const window2 = new THREE.Mesh(windowGeometry, windowMaterial);
-    window2.position.set(0.8, 1.2, 1.51);
-    buildingGroup.add(window2);
-
-    scene.add(buildingGroup);
-    setScene(scene);
-
-    // Mouse controls
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
-
-    const handleMouseDown = (event: MouseEvent) => {
-      isDragging = true;
-      previousMousePosition = { x: event.clientX, y: event.clientY };
-    };
-
+    const handleMouseDown = () => { isMouseDown = true; };
+    const handleMouseUp = () => { isMouseDown = false; };
     const handleMouseMove = (event: MouseEvent) => {
-      if (!isDragging) return;
-
-      const deltaMove = {
-        x: event.clientX - previousMousePosition.x,
-        y: event.clientY - previousMousePosition.y
-      };
-
-      // Rotate camera around the building
-      const spherical = new THREE.Spherical();
-      spherical.setFromVector3(camera.position);
-      spherical.theta -= deltaMove.x * 0.01;
-      spherical.phi += deltaMove.y * 0.01;
-      spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+      if (!isMouseDown) return;
       
-      camera.position.setFromSpherical(spherical);
-      camera.lookAt(0, 1, 0);
-
-      previousMousePosition = { x: event.clientX, y: event.clientY };
-    };
-
-    const handleMouseUp = () => {
-      isDragging = false;
-    };
-
-    const handleWheel = (event: WheelEvent) => {
-      const distance = camera.position.distanceTo(new THREE.Vector3(0, 1, 0));
-      const newDistance = Math.max(2, Math.min(20, distance + event.deltaY * 0.01));
+      const deltaX = event.clientX - mouseX;
+      const deltaY = event.clientY - mouseY;
       
-      const direction = new THREE.Vector3();
-      direction.subVectors(camera.position, new THREE.Vector3(0, 1, 0)).normalize();
-      camera.position.copy(direction.multiplyScalar(newDistance).add(new THREE.Vector3(0, 1, 0)));
+      camera.position.x = camera.position.x * Math.cos(deltaX * 0.01) + camera.position.z * Math.sin(deltaX * 0.01);
+      camera.position.z = camera.position.z * Math.cos(deltaX * 0.01) - camera.position.x * Math.sin(deltaX * 0.01);
+      camera.position.y += deltaY * 0.01;
+      
+      camera.lookAt(0, 0, 0);
+      
+      mouseX = event.clientX;
+      mouseY = event.clientY;
     };
 
-    canvasRef.current.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    canvasRef.current.addEventListener('wheel', handleWheel);
+    renderer.domElement.addEventListener('mousedown', handleMouseDown);
+    renderer.domElement.addEventListener('mouseup', handleMouseUp);
+    renderer.domElement.addEventListener('mousemove', handleMouseMove);
 
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      camera.lookAt(0, 1, 0);
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    // Handle resize
+    // Resize handler
     const handleResize = () => {
-      if (!canvasRef.current) return;
-      camera.aspect = canvasRef.current.clientWidth / canvasRef.current.clientHeight;
+      if (!mountRef.current) return;
+      
+      camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
+      renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     };
 
     window.addEventListener('resize', handleResize);
 
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      canvasRef.current?.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      canvasRef.current?.removeEventListener('wheel', handleWheel);
+      renderer.domElement.removeEventListener('mousedown', handleMouseDown);
+      renderer.domElement.removeEventListener('mouseup', handleMouseUp);
+      renderer.domElement.removeEventListener('mousemove', handleMouseMove);
+      
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
       renderer.dispose();
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full cursor-pointer"
-      style={{ display: 'block' }}
-    />
-  );
+  // Update CAD objects when cadData changes
+  useEffect(() => {
+    if (!sceneRef.current || !cadData) return;
+
+    // Remove existing CAD objects
+    if (cadObjectsRef.current) {
+      sceneRef.current.remove(cadObjectsRef.current);
+    }
+
+    // Create new group for CAD objects
+    const cadGroup = new THREE.Group();
+    cadObjectsRef.current = cadGroup;
+
+    // Create materials
+    const materials = {
+      cube: new THREE.MeshLambertMaterial({ color: 0x00ff88 }),
+      sphere: new THREE.MeshLambertMaterial({ color: 0x0088ff }),
+      cylinder: new THREE.MeshLambertMaterial({ color: 0xff8800 }),
+      plane: new THREE.MeshLambertMaterial({ color: 0x888888 })
+    };
+
+    // Generate 3D objects from CAD data
+    cadData.shapes.forEach((shape, index) => {
+      let geometry: THREE.BufferGeometry;
+      
+      switch (shape.type) {
+        case 'cube':
+          geometry = new THREE.BoxGeometry(
+            shape.scale.x || 1,
+            shape.scale.y || 1,
+            shape.scale.z || 1
+          );
+          break;
+        case 'sphere':
+          geometry = new THREE.SphereGeometry(
+            Math.max(shape.scale.x, shape.scale.y, shape.scale.z) / 2 || 0.5,
+            32,
+            16
+          );
+          break;
+        case 'cylinder':
+          geometry = new THREE.CylinderGeometry(
+            shape.scale.x / 2 || 0.5,
+            shape.scale.x / 2 || 0.5,
+            shape.scale.y || 1,
+            32
+          );
+          break;
+        case 'plane':
+          geometry = new THREE.PlaneGeometry(
+            shape.scale.x || 1,
+            shape.scale.z || 1
+          );
+          break;
+        default:
+          geometry = new THREE.BoxGeometry(1, 1, 1);
+      }
+
+      const mesh = new THREE.Mesh(geometry, materials[shape.type] || materials.cube);
+      
+      // Set position
+      mesh.position.set(
+        shape.position.x || 0,
+        shape.position.y || 0,
+        shape.position.z || 0
+      );
+
+      // Set rotation if provided
+      if (shape.rotation) {
+        mesh.rotation.set(
+          shape.rotation.x || 0,
+          shape.rotation.y || 0,
+          shape.rotation.z || 0
+        );
+      }
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      
+      cadGroup.add(mesh);
+    });
+
+    sceneRef.current.add(cadGroup);
+  }, [cadData]);
+
+  return <div ref={mountRef} className="w-full h-full" />;
 };
