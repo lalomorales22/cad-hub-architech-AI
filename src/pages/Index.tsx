@@ -7,6 +7,7 @@ import { TopBar } from "@/components/TopBar";
 const Index = () => {
   const [activeProject, setActiveProject] = useState("Ocean Beach Residence");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [currentView, setCurrentView] = useState("dashboard");
 
   return (
     <div className="min-h-screen bg-gray-900 flex overflow-hidden">
@@ -14,6 +15,8 @@ const Index = () => {
         collapsed={sidebarCollapsed}
         activeProject={activeProject}
         onProjectSelect={setActiveProject}
+        onNavigate={setCurrentView}
+        currentView={currentView}
       />
       
       <div className="flex-1 flex flex-col">
@@ -22,7 +25,10 @@ const Index = () => {
           activeProject={activeProject}
         />
         
-        <MainWorkspace activeProject={activeProject} />
+        <MainWorkspace 
+          activeProject={activeProject} 
+          currentView={currentView}
+        />
       </div>
     </div>
   );

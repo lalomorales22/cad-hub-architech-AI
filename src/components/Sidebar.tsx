@@ -19,30 +19,32 @@ interface SidebarProps {
   collapsed: boolean;
   activeProject: string;
   onProjectSelect: (project: string) => void;
+  onNavigate: (view: string) => void;
+  currentView: string;
 }
 
-export const Sidebar = ({ collapsed, activeProject, onProjectSelect }: SidebarProps) => {
+export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate, currentView }: SidebarProps) => {
   const menuItems = [
     { 
       title: "WORKSPACE", 
       items: [
-        { name: "Dashboard", icon: Home, active: true, notifications: 0 },
-        { name: "Projects", icon: FolderOpen, active: false, notifications: 3 },
-        { name: "Recent Files", icon: Clock, active: false, notifications: 0 }
+        { name: "Dashboard", icon: Home, view: "dashboard", active: currentView === "dashboard", notifications: 0 },
+        { name: "Projects", icon: FolderOpen, view: "projects", active: currentView === "projects", notifications: 3 },
+        { name: "Recent Files", icon: Clock, view: "files", active: currentView === "files", notifications: 0 }
       ] 
     },
     { 
       title: "CREATE", 
       items: [
-        { name: "Text-to-CAD", icon: Plus, active: false, notifications: 0 },
-        { name: "Image-to-CAD", icon: Image, active: false, notifications: 0 }
+        { name: "Text-to-CAD", icon: Plus, view: "text-to-cad", active: currentView === "text-to-cad", notifications: 0 },
+        { name: "Image-to-CAD", icon: Image, view: "image-to-cad", active: currentView === "image-to-cad", notifications: 0 }
       ] 
     },
     { 
       title: "TOOLS", 
       items: [
-        { name: "Settings", icon: Settings, active: false, notifications: 0 },
-        { name: "Help", icon: HelpCircle, active: false, notifications: 0 }
+        { name: "Settings", icon: Settings, view: "settings", active: currentView === "settings", notifications: 0 },
+        { name: "Help", icon: HelpCircle, view: "help", active: currentView === "help", notifications: 0 }
       ] 
     }
   ];
@@ -83,6 +85,7 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect }: SidebarPr
                 <Button
                   key={item.name}
                   variant="ghost"
+                  onClick={() => onNavigate(item.view)}
                   className={cn(
                     "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800/60",
                     collapsed ? "px-2 justify-center" : "px-3",
