@@ -38,6 +38,7 @@ export const ImageToCAD = () => {
   const [dragActive, setDragActive] = useState(false);
   const [currentGeneration, setCurrentGeneration] = useState<CADGenerationResult | null>(null);
   const [analysisPrompt, setAnalysisPrompt] = useState("");
+  const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (files: FileList | null) => {
@@ -53,6 +54,11 @@ export const ImageToCAD = () => {
           status: 'uploaded'
         };
         setUploadedImages(prev => [newImage, ...prev]);
+        
+        // Auto-select the first uploaded image
+        if (!selectedImageId) {
+          setSelectedImageId(newImage.id);
+        }
       }
     });
   };
@@ -71,6 +77,52 @@ export const ImageToCAD = () => {
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
+  };
+
+  const generateFromImageAndPrompt = async () => {
+    const openAIKey = localStorage.getItem('openai_api_key');
+    if (!openAIKey) {
+      toast.error("OpenAI API key required. Please add it in Settings.");
+      return;
+    }
+
+    const selectedImage = uploadedImages.find(img => img.id === selectedImageId);
+    if (!selectedImage) {
+      toast.error("Please select an image to process");
+      return;
+    }
+
+    setIsProcessing(true);
+    setUploadedImages(prev => 
+      prev.map(img => 
+        img.id === selectedImageId ? { ...img, status: 'processing' } : img
+      )
+    );
+
+    try {
+      const result = await aiService.generateCADFromImage({
+        imageUrl: selectedImage.url,
+        prompt: analysisPrompt || undefined,
+        analysisType: 'architectural'
+      });
+
+      setCurrentGeneration(result);
+      setUploadedImages(prev => 
+        prev.map(img => 
+          img.id === selectedImageId ? { ...img, status: 'completed', result } : img
+        )
+      );
+      toast.success("CAD model generated from image and prompt!");
+    } catch (error) {
+      console.error('Image processing failed:', error);
+      setUploadedImages(prev => 
+        prev.map(img => 
+          img.id === selectedImageId ? { ...img, status: 'failed' } : img
+        )
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const processImage = async (imageId: number) => {
@@ -118,6 +170,9 @@ export const ImageToCAD = () => {
 
   const removeImage = (imageId: number) => {
     setUploadedImages(prev => prev.filter(img => img.id !== imageId));
+    if (selectedImageId === imageId) {
+      setSelectedImageId(null);
+    }
   };
 
   const loadGeneration = (result: CADGenerationResult) => {
@@ -132,6 +187,8 @@ export const ImageToCAD = () => {
     { name: "Grid", icon: Grid },
     { name: "Layers", icon: Layers },
   ];
+
+  const selectedImage = uploadedImages.find(img => img.id === selectedImageId);
 
   return (
     <div className="h-full flex bg-gray-900">
@@ -232,7 +289,13 @@ export const ImageToCAD = () => {
           <h3 className="text-white font-semibold mb-3">Recent Uploads</h3>
           <div className="space-y-3">
             {uploadedImages.map((image) => (
-              <Card key={image.id} className="bg-gray-700/50 border-gray-600">
+              <Card 
+                key={image.id} 
+                className={`bg-gray-700/50 border-gray-600 cursor-pointer transition-colors ${
+                  selectedImageId === image.id ? 'ring-2 ring-cyan-400' : ''
+                }`}
+                onClick={() => setSelectedImageId(image.id)}
+              >
                 <CardContent className="p-3">
                   <div className="flex items-start space-x-3">
                     <img 
@@ -256,7 +319,10 @@ export const ImageToCAD = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeImage(image.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeImage(image.id);
+                          }}
                           className="h-6 w-6 p-0 text-gray-400 hover:text-white"
                         >
                           <X className="h-3 w-3" />
@@ -267,7 +333,10 @@ export const ImageToCAD = () => {
                         {image.status === 'uploaded' && (
                           <Button
                             size="sm"
-                            onClick={() => processImage(image.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              processImage(image.id);
+                            }}
                             disabled={isProcessing || !localStorage.getItem('openai_api_key')}
                             className="h-6 bg-cyan-600 hover:bg-cyan-500 text-white text-xs"
                           >
@@ -278,7 +347,10 @@ export const ImageToCAD = () => {
                         {image.result && (
                           <Button
                             size="sm"
-                            onClick={() => loadGeneration(image.result!)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              loadGeneration(image.result!);
+                            }}
                             className="h-6 bg-green-600 hover:bg-green-500 text-white text-xs"
                           >
                             <Eye className="h-3 w-3 mr-1" />
@@ -371,17 +443,61 @@ export const ImageToCAD = () => {
           </div>
         </div>
 
-        {/* Instructions */}
-        <div className="h-20 bg-gray-800/50 border-t border-gray-700 p-4">
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-sm text-gray-300 mb-1">
-                Upload reference images, sketches, or photos to generate 3D CAD models
-              </p>
-              <p className="text-xs text-gray-500">
-                Supported formats: Floor plans, elevation drawings, site photos, architectural sketches
-              </p>
+        {/* Generate Section */}
+        <div className="h-32 bg-gray-800/50 border-t border-gray-700 p-4">
+          <div className="h-full flex items-center space-x-4">
+            {/* Selected Image Preview */}
+            {selectedImage && (
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 rounded border border-gray-600 overflow-hidden bg-gray-700">
+                  <img 
+                    src={selectedImage.url} 
+                    alt={selectedImage.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1 text-center truncate w-20">
+                  {selectedImage.name}
+                </p>
+              </div>
+            )}
+            
+            {/* Generation Control */}
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="flex items-center space-x-3">
+                <div className="flex-1">
+                  <p className="text-sm text-gray-300 mb-1">
+                    {selectedImage 
+                      ? `Generate CAD model from "${selectedImage.name}"${analysisPrompt ? ' with custom prompt' : ''}`
+                      : 'Select an image to generate CAD model'
+                    }
+                  </p>
+                  {analysisPrompt && (
+                    <p className="text-xs text-gray-500 italic">"{analysisPrompt}"</p>
+                  )}
+                </div>
+                <Button
+                  onClick={generateFromImageAndPrompt}
+                  disabled={!selectedImage || isProcessing || !localStorage.getItem('openai_api_key')}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-6"
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 mr-2" />
+                      Generate
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
+          </div>
+          <div className="mt-2 text-xs text-gray-500">
+            Select an image from the left panel, add optional context, then click Generate
           </div>
         </div>
       </div>

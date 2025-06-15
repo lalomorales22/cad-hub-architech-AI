@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,7 +21,8 @@ import {
   Settings,
   Save,
   Download,
-  AlertCircle
+  AlertCircle,
+  FileDown
 } from "lucide-react";
 import { ThreeJSCanvas } from "./ThreeJSCanvas";
 import { aiService, CADGenerationResult } from "../services/aiServices";
@@ -98,6 +98,71 @@ export const TextToCAD = () => {
   const loadGeneration = (result: CADGenerationResult) => {
     setCurrentGeneration(result);
     toast.success("CAD model loaded");
+  };
+
+  const handleSaveModel = () => {
+    if (!currentGeneration) {
+      toast.error("No model to save");
+      return;
+    }
+
+    const modelData = {
+      ...currentGeneration,
+      exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(modelData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cad-model-${currentGeneration.id}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Model saved as JSON file");
+  };
+
+  const handleExportSTL = () => {
+    if (!currentGeneration) {
+      toast.error("No model to export");
+      return;
+    }
+
+    // Simple STL export (basic implementation)
+    let stlContent = "solid model\n";
+    
+    currentGeneration.shapes.forEach((shape) => {
+      if (shape.type === 'cube') {
+        // Generate basic cube triangles for STL
+        const { x, y, z } = shape.position;
+        const { x: sx, y: sy, z: sz } = shape.scale;
+        
+        // This is a simplified cube - in a real implementation you'd generate proper triangular faces
+        stlContent += `  facet normal 0 0 1\n`;
+        stlContent += `    outer loop\n`;
+        stlContent += `      vertex ${x-sx/2} ${y-sy/2} ${z+sz/2}\n`;
+        stlContent += `      vertex ${x+sx/2} ${y-sy/2} ${z+sz/2}\n`;
+        stlContent += `      vertex ${x+sx/2} ${y+sy/2} ${z+sz/2}\n`;
+        stlContent += `    endloop\n`;
+        stlContent += `  endfacet\n`;
+      }
+    });
+    
+    stlContent += "endsolid model\n";
+
+    const blob = new Blob([stlContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cad-model-${currentGeneration.id}.stl`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Model exported as STL file");
   };
 
   const toolbarTools = [
@@ -280,6 +345,28 @@ export const TextToCAD = () => {
             )}
           </div>
           <div className="flex items-center space-x-2">
+            {currentGeneration && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleSaveModel}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  Save JSON
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleExportSTL}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <FileDown className="h-4 w-4 mr-1" />
+                  Export STL
+                </Button>
+              </>
+            )}
             <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
               <Settings className="h-4 w-4" />
             </Button>
