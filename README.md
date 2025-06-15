@@ -3,7 +3,8 @@
 
 A powerful AI-driven CAD (Computer-Aided Design) platform that combines advanced 3D modeling capabilities with cutting-edge artificial intelligence services. Built with React, TypeScript, and Three.js, this application provides a comprehensive suite of tools for architectural design, 3D modeling, and AI-powered generation.
 
-![CAD Hub Architect AI](https://github.com/lalomorales22/cad-hub-architech-AI)
+![Screenshot 2025-06-15 at 12 19 55 AM](https://github.com/user-attachments/assets/761101c8-b81d-48ac-b1b5-055378e58fd7)
+
 
 ## 🚀 Features
 
