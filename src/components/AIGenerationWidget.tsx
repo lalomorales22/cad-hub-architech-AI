@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -72,7 +71,7 @@ export const AIGenerationWidget = ({ onGenerate, onClose, theme }: AIGenerationW
   };
 
   const themeClasses = theme === 'light'
-    ? 'bg-white border-gray-300 text-gray-900'
+    ? 'bg-white border-stone-200 text-black'
     : 'bg-gray-800 border-gray-700 text-white';
 
   return (

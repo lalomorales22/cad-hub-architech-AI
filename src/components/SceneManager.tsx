@@ -91,12 +91,24 @@ export const SceneManager = ({
   };
 
   const themeClasses = theme === 'light'
-    ? 'bg-white border-gray-300 text-gray-900'
+    ? 'bg-white border-stone-200 text-black'
     : 'bg-gray-800 border-gray-700 text-white';
 
   const buttonTheme = theme === 'light'
-    ? 'hover:bg-gray-100'
+    ? 'hover:bg-stone-50'
     : 'hover:bg-gray-700';
+
+  const categoryHeaderBg = theme === 'light'
+    ? 'bg-stone-50'
+    : 'bg-gray-900';
+
+  const selectedBg = theme === 'light'
+    ? 'border-blue-500 bg-blue-50'
+    : 'border-blue-500 bg-blue-900/20';
+
+  const itemBg = theme === 'light'
+    ? 'border-stone-200 hover:bg-stone-50'
+    : 'border-gray-700 hover:bg-gray-800';
 
   const groupedObjects = objects.reduce((acc, obj) => {
     if (!acc[obj.category]) acc[obj.category] = [];
@@ -131,7 +143,7 @@ export const SceneManager = ({
             
             return (
               <div key={category} className="mb-4">
-                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900">
+                <div className={`px-4 py-2 ${categoryHeaderBg}`}>
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full ${getCategoryColor(category)}`} />
                     <CategoryIcon className="h-4 w-4" />
@@ -147,8 +159,8 @@ export const SceneManager = ({
                       key={obj.id}
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedObjectId === obj.id
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          ? selectedBg
+                          : itemBg
                       }`}
                       onClick={() => onObjectSelect(obj.id)}
                     >

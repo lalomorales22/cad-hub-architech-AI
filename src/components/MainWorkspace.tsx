@@ -69,11 +69,6 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
     }));
   };
 
-  // Apply theme classes to the workspace
-  const themeClasses = theme === 'light' 
-    ? 'bg-gray-50 text-gray-900' 
-    : 'bg-gray-900 text-white';
-
   const handleImportModel = (modelData: any) => {
     const newObject: SceneObject = {
       id: crypto.randomUUID(),
@@ -189,7 +184,19 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
     toast.success("Scene exported!");
   };
 
-  // Render different views based on currentView
+  // Apply theme classes to the workspace
+  const themeClasses = theme === 'light' 
+    ? 'bg-white text-black' 
+    : 'bg-gray-900 text-white';
+
+  const cardTheme = theme === 'light'
+    ? 'bg-white border-stone-200'
+    : 'bg-gray-900/90 border-gray-700';
+
+  const canvasTheme = theme === 'light'
+    ? 'bg-stone-50/30 border-stone-200'
+    : 'bg-gray-800/30 border-gray-700';
+
   const renderCurrentView = () => {
     switch (currentView) {
       case "dashboard":
@@ -211,7 +218,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         return (
           <div className="h-full p-6 overflow-y-auto">
             <div className="mb-6">
-              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-black' : 'text-white'}`}>
                 All Projects
               </h2>
               <p className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
@@ -226,7 +233,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         return (
           <div className="h-full p-6 overflow-y-auto">
             <div className="mb-6">
-              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-black' : 'text-white'}`}>
                 File Manager
               </h2>
               <p className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
@@ -241,7 +248,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         return (
           <div className="h-full p-6 overflow-y-auto">
             <div className="mb-6">
-              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-black' : 'text-white'}`}>
                 Template Library
               </h2>
               <p className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
@@ -298,23 +305,15 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
             
             {/* Main 3D Canvas Area - Takes up most space */}
             <div className="flex-1 min-w-0 p-4">
-              <div className={`h-full rounded-xl border relative overflow-hidden ${
-                theme === 'light' 
-                  ? 'bg-gray-100/30 border-gray-300' 
-                  : 'bg-gray-800/30 border-gray-700'
-              }`}>
+              <div className={`h-full rounded-xl border relative overflow-hidden ${canvasTheme}`}>
                 <ThreeJSCanvas cadData={cadData} />
                 
                 {/* Enhanced Project Info Overlay */}
-                <Card className={`absolute top-6 left-6 backdrop-blur-sm border ${
-                  theme === 'light'
-                    ? 'bg-white/90 border-gray-300'
-                    : 'bg-gray-900/90 border-gray-700'
-                } p-4`}>
+                <Card className={`absolute top-6 left-6 backdrop-blur-sm border ${cardTheme} p-4`}>
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
                     <div>
-                      <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                      <h3 className={`font-semibold ${theme === 'light' ? 'text-black' : 'text-white'}`}>
                         {activeProject}
                       </h3>
                       <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
@@ -413,7 +412,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         return (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              <h2 className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-black' : 'text-white'}`}>
                 Coming Soon
               </h2>
               <p className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>

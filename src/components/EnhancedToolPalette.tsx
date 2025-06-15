@@ -98,16 +98,16 @@ export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImpor
   };
 
   const themeClasses = theme === 'light'
-    ? 'bg-white border-gray-300 text-gray-900'
+    ? 'bg-white border-stone-200 text-black'
     : 'bg-gray-800 border-gray-700 text-white';
 
   const buttonTheme = theme === 'light'
-    ? 'hover:bg-gray-100'
+    ? 'hover:bg-stone-50'
     : 'hover:bg-gray-700';
 
-  // Lighter background for tool sections
+  // Tool sections use lighter background
   const toolSectionBg = theme === 'light'
-    ? 'bg-gray-50'
+    ? 'bg-stone-50'
     : 'bg-gray-700';
 
   return (
