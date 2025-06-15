@@ -1,11 +1,28 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import { Sidebar } from "@/components/Sidebar";
+import { MainWorkspace } from "@/components/MainWorkspace";
+import { TopBar } from "@/components/TopBar";
 
 const Index = () => {
+  const [activeProject, setActiveProject] = useState("Ocean Beach Residence");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gray-900 flex overflow-hidden">
+      <Sidebar 
+        collapsed={sidebarCollapsed}
+        activeProject={activeProject}
+        onProjectSelect={setActiveProject}
+      />
+      
+      <div className="flex-1 flex flex-col">
+        <TopBar 
+          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          activeProject={activeProject}
+        />
+        
+        <MainWorkspace activeProject={activeProject} />
       </div>
     </div>
   );
