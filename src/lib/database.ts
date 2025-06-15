@@ -1,4 +1,3 @@
-
 interface Project {
   id: string;
   name: string;
@@ -100,14 +99,8 @@ export const mockProjects: Project[] = [
   }
 ];
 
-export const mockRecentFiles: RecentFile[] = [
-  { id: '1', name: 'Floor Plan - Level 1.dwg', type: 'dwg', size: '2.4 MB', lastModified: '2 hours ago', projectId: '1' },
-  { id: '2', name: 'Elevation Views.pdf', type: 'pdf', size: '5.1 MB', lastModified: '4 hours ago', projectId: '1' },
-  { id: '3', name: 'Site Analysis.pdf', type: 'pdf', size: '8.2 MB', lastModified: '1 day ago', projectId: '2' },
-  { id: '4', name: '3D Model Export.obj', type: '3d', size: '15.7 MB', lastModified: '2 days ago', projectId: '1' },
-  { id: '5', name: 'Material Samples.jpg', type: 'image', size: '3.2 MB', lastModified: '3 days ago', projectId: '3' },
-  { id: '6', name: 'Structural Details.dwg', type: 'dwg', size: '4.8 MB', lastModified: '5 days ago', projectId: '2' }
-];
+// Clear the mock files array
+export const mockRecentFiles: RecentFile[] = [];
 
 export const mockTemplates: Template[] = [
   {
