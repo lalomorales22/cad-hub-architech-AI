@@ -3,6 +3,17 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Home, 
+  FolderOpen, 
+  Plus, 
+  Image, 
+  Settings, 
+  HelpCircle,
+  Bell,
+  Clock
+} from "lucide-react";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -12,45 +23,83 @@ interface SidebarProps {
 
 export const Sidebar = ({ collapsed, activeProject, onProjectSelect }: SidebarProps) => {
   const menuItems = [
-    { title: "CREATE.", items: ["Text-to-CAD"] },
-    { title: "GENERATE.", items: ["Image-to-CAD"] },
-    { title: "MY FILES.", items: [] }
+    { 
+      title: "WORKSPACE", 
+      items: [
+        { name: "Dashboard", icon: Home, active: true, notifications: 0 },
+        { name: "Projects", icon: FolderOpen, active: false, notifications: 3 },
+        { name: "Recent Files", icon: Clock, active: false, notifications: 0 }
+      ] 
+    },
+    { 
+      title: "CREATE", 
+      items: [
+        { name: "Text-to-CAD", icon: Plus, active: false, notifications: 0 },
+        { name: "Image-to-CAD", icon: Image, active: false, notifications: 0 }
+      ] 
+    },
+    { 
+      title: "TOOLS", 
+      items: [
+        { name: "Settings", icon: Settings, active: false, notifications: 0 },
+        { name: "Help", icon: HelpCircle, active: false, notifications: 0 }
+      ] 
+    }
   ];
 
   return (
     <div className={cn(
       "bg-gray-950 border-r border-gray-800 flex flex-col transition-all duration-300",
-      collapsed ? "w-16" : "w-64"
+      collapsed ? "w-16" : "w-72"
     )}>
       {/* Logo/Brand */}
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-white tracking-wider">
-          {collapsed ? "CH" : "CAD HUB"}
-        </h1>
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">CH</span>
+          </div>
+          {!collapsed && (
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-wider">CAD HUB</h1>
+              <p className="text-xs text-gray-400">Professional Edition</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <Separator className="bg-gray-800" />
 
       {/* Navigation Menu */}
-      <div className="flex-1 p-4 space-y-6">
+      <div className="flex-1 p-4 space-y-6 overflow-y-auto">
         {menuItems.map((section, index) => (
           <div key={index} className="space-y-2">
             {!collapsed && (
-              <h3 className="text-gray-400 text-sm font-medium tracking-wide">
+              <h3 className="text-gray-400 text-xs font-semibold tracking-wider px-2">
                 {section.title}
               </h3>
             )}
             <div className="space-y-1">
               {section.items.map((item) => (
                 <Button
-                  key={item}
+                  key={item.name}
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800",
-                    collapsed && "px-2"
+                    "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800/60",
+                    collapsed ? "px-2 justify-center" : "px-3",
+                    item.active && "bg-gray-800/80 text-white"
                   )}
                 >
-                  {collapsed ? item.charAt(0) : item}
+                  <item.icon className={cn("h-4 w-4", !collapsed && "mr-3")} />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left">{item.name}</span>
+                      {item.notifications > 0 && (
+                        <Badge variant="secondary" className="bg-cyan-600 text-white text-xs px-1.5 py-0">
+                          {item.notifications}
+                        </Badge>
+                      )}
+                    </>
+                  )}
                 </Button>
               ))}
             </div>
@@ -64,13 +113,24 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect }: SidebarPr
       <div className="p-4">
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-gray-700 text-white">CH</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-600 text-white font-semibold">
+              CH
+            </AvatarFallback>
           </Avatar>
           {!collapsed && (
-            <div>
-              <p className="text-white font-medium">Corey</p>
-              <p className="text-gray-400 text-sm">Hilton</p>
+            <div className="flex-1">
+              <p className="text-white font-medium">Corey Hilton</p>
+              <p className="text-gray-400 text-sm">Senior Architect</p>
             </div>
+          )}
+          {!collapsed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white"
+            >
+              <Bell className="h-4 w-4" />
+            </Button>
           )}
         </div>
       </div>
