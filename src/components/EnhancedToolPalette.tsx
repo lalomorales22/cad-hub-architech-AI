@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -24,7 +23,8 @@ import {
   Upload,
   Layers,
   Grid3X3,
-  Settings
+  Settings,
+  FileText
 } from "lucide-react";
 
 interface EnhancedToolPaletteProps {
@@ -32,9 +32,10 @@ interface EnhancedToolPaletteProps {
   onToolSelect: (tool: string) => void;
   onAIGenerate: () => void;
   onImportModel: () => void;
+  onDocumentationGenerate?: () => void;
 }
 
-export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImportModel }: EnhancedToolPaletteProps) => {
+export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImportModel, onDocumentationGenerate }: EnhancedToolPaletteProps) => {
   const [activeCategory, setActiveCategory] = useState("basic");
   const [selectedTool, setSelectedTool] = useState("select");
 
@@ -137,6 +138,15 @@ export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImpor
           >
             <Upload className="mr-2 h-4 w-4" />
             Import Model
+          </Button>
+          <Button
+            onClick={onDocumentationGenerate}
+            variant="outline"
+            className="w-full"
+            size="sm"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            2D Documentation
           </Button>
         </div>
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ThreeJSCanvas } from "@/components/ThreeJSCanvas";
 import { Chat } from "@/components/Chat";
@@ -24,9 +23,10 @@ import { ModelImporter } from "@/components/ModelImporter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Upload, Save, Download, Layers, Settings, RotateCcw, ZoomIn, WandSparkles } from "lucide-react";
+import { MessageSquare, Upload, Save, Download, Layers, Settings, RotateCcw, ZoomIn, WandSparkles, FileText } from "lucide-react";
 import { useProject } from "@/contexts/ProjectContext";
 import { toast } from "sonner";
+import { DocumentationGenerator } from "@/components/DocumentationGenerator";
 
 interface MainWorkspaceProps {
   activeProject: string;
@@ -53,6 +53,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
   const [selectedObjectId, setSelectedObjectId] = useState<string>();
   const [selectedTool, setSelectedTool] = useState("select");
   const [cadData, setCadData] = useState(null);
+  const [showDocumentationGenerator, setShowDocumentationGenerator] = useState(false);
   
   const { getCurrentProjectId } = useProject();
 
@@ -287,6 +288,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
                 onToolSelect={handleToolSelect}
                 onAIGenerate={() => setShowAIGenerator(true)}
                 onImportModel={() => setShowImporter(true)}
+                onDocumentationGenerate={() => setShowDocumentationGenerator(true)}
               />
             </div>
             
@@ -328,6 +330,15 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
 
                 {/* Enhanced Action Toolbar */}
                 <div className={`absolute top-6 right-6 flex gap-2`}>
+                  <Button
+                    onClick={() => setShowDocumentationGenerator(true)}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white backdrop-blur-sm"
+                    size="sm"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    2D Docs
+                  </Button>
+                  
                   <Button
                     onClick={() => setShowAIGenerator(true)}
                     className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white backdrop-blur-sm"
@@ -424,6 +435,15 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
       >
         <MessageSquare className="h-6 w-6" />
       </Button>
+
+      {/* Documentation Generator */}
+      {showDocumentationGenerator && (
+        <DocumentationGenerator
+          theme={theme}
+          sceneObjects={sceneObjects}
+          onClose={() => setShowDocumentationGenerator(false)}
+        />
+      )}
 
       {/* AI Generation Widget */}
       {showAIGenerator && (
