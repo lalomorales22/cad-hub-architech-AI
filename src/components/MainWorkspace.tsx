@@ -24,7 +24,7 @@ import { ModelImporter } from "@/components/ModelImporter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Upload, Save, Download, Layers, Settings, RotateCcw, ZoomIn } from "lucide-react";
+import { MessageSquare, Upload, Save, Download, Layers, Settings, RotateCcw, ZoomIn, WandSparkles } from "lucide-react";
 import { useProject } from "@/contexts/ProjectContext";
 import { toast } from "sonner";
 
@@ -93,6 +93,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
     setSceneObjects(prev => [...prev, newObject]);
     setCadData(aiCadData); // Update the main canvas
     setShowAIGenerator(false);
+    toast.success("AI generated model added to scene!");
   };
 
   const handleToolSelect = (tool: string) => {
@@ -269,15 +270,17 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         return (
           <div className="h-full flex">
             {/* Left Panel - Enhanced Tool Palette */}
-            <EnhancedToolPalette
-              theme={theme}
-              onToolSelect={handleToolSelect}
-              onAIGenerate={() => setShowAIGenerator(true)}
-              onImportModel={() => setShowImporter(true)}
-            />
+            <div className="flex-shrink-0">
+              <EnhancedToolPalette
+                theme={theme}
+                onToolSelect={handleToolSelect}
+                onAIGenerate={() => setShowAIGenerator(true)}
+                onImportModel={() => setShowImporter(true)}
+              />
+            </div>
             
-            {/* Main 3D Canvas Area */}
-            <div className="flex-1 p-6">
+            {/* Main 3D Canvas Area - Takes up most space */}
+            <div className="flex-1 min-w-0 p-4">
               <div className={`h-full rounded-xl border relative overflow-hidden ${
                 theme === 'light' 
                   ? 'bg-gray-100/30 border-gray-300' 
@@ -314,6 +317,15 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
 
                 {/* Enhanced Action Toolbar */}
                 <div className={`absolute top-6 right-6 flex gap-2`}>
+                  <Button
+                    onClick={() => setShowAIGenerator(true)}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white backdrop-blur-sm"
+                    size="sm"
+                  >
+                    <WandSparkles className="mr-2 h-4 w-4" />
+                    AI Generate
+                  </Button>
+                  
                   <Button
                     onClick={handleSaveScene}
                     variant="secondary"
@@ -358,14 +370,16 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
             </div>
 
             {/* Right Panel - Scene Manager */}
-            <SceneManager
-              theme={theme}
-              objects={sceneObjects}
-              selectedObjectId={selectedObjectId}
-              onObjectUpdate={handleObjectUpdate}
-              onObjectDelete={handleObjectDelete}
-              onObjectSelect={setSelectedObjectId}
-            />
+            <div className="flex-shrink-0">
+              <SceneManager
+                theme={theme}
+                objects={sceneObjects}
+                selectedObjectId={selectedObjectId}
+                onObjectUpdate={handleObjectUpdate}
+                onObjectDelete={handleObjectDelete}
+                onObjectSelect={setSelectedObjectId}
+              />
+            </div>
           </div>
         );
 
@@ -402,7 +416,7 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
 
       {/* AI Generation Widget */}
       {showAIGenerator && (
-        <div className="fixed bottom-24 left-6 z-40">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <AIGenerationWidget
             onGenerate={handleAIGenerate}
             onClose={() => setShowAIGenerator(false)}
