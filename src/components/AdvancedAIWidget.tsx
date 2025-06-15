@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WandSparkles, Loader2, X, Zap, Eye, Cpu, Dna } from "lucide-react";
+import { WandSparkles, Loader2, X, Zap, Eye, Cpu, Dna, Bot } from "lucide-react";
 import { advancedAI } from "@/services/advancedAIServices";
 import { toast } from "sonner";
 
@@ -21,21 +21,15 @@ interface AdvancedAIWidgetProps {
 export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidgetProps) => {
   const [prompt, setPrompt] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("fal");
+  const [selectedModel, setSelectedModel] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   
-  // Fal.AI specific
+  // Provider-specific settings
   const [falStyle, setFalStyle] = useState("realistic");
   const [falQuality, setFalQuality] = useState("medium");
-  
-  // Stability AI specific
   const [stabilityStyle, setStabilityStyle] = useState("architectural");
   const [imageSize, setImageSize] = useState("1024");
-  
-  // Replicate specific
-  const [replicateModel, setReplicateModel] = useState("3d-generation");
-  
-  // DeepMind specific
   const [analysisType, setAnalysisType] = useState("stability");
 
   const providers = [
@@ -44,34 +38,75 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
       name: "Fal.AI", 
       icon: Zap, 
       description: "Real-time 3D generation",
-      color: "text-purple-400"
+      color: "text-purple-400",
+      capabilities: ["3D Models", "Text-to-3D", "Image-to-3D"],
+      models: [
+        { id: "3d-generation", name: "3D Generation", type: "3D" },
+        { id: "mesh-creation", name: "Mesh Creator", type: "3D" },
+        { id: "point-cloud", name: "Point Cloud", type: "3D" }
+      ]
     },
     { 
       id: "stability", 
       name: "Stability AI", 
       icon: Eye, 
       description: "Advanced image generation",
-      color: "text-blue-400"
+      color: "text-blue-400",
+      capabilities: ["Images", "Textures", "Concept Art"],
+      models: [
+        { id: "stable-diffusion-3", name: "Stable Diffusion 3", type: "Image" },
+        { id: "stable-video", name: "Stable Video", type: "Video" },
+        { id: "stable-code", name: "Stable Code", type: "Code" }
+      ]
     },
     { 
       id: "replicate", 
       name: "Replicate", 
       icon: Cpu, 
       description: "ML model processing",
-      color: "text-green-400"
+      color: "text-green-400",
+      capabilities: ["3D Models", "Images", "Audio", "Video"],
+      models: [
+        { id: "3d-generation", name: "3D Generation", type: "3D" },
+        { id: "image-upscaling", name: "Image Upscaling", type: "Image" },
+        { id: "style-transfer", name: "Style Transfer", type: "Image" }
+      ]
     },
     { 
       id: "deepmind", 
       name: "DeepMind", 
       icon: Dna, 
       description: "Structural analysis",
-      color: "text-orange-400"
+      color: "text-orange-400",
+      capabilities: ["Protein Folding", "Structure Analysis", "Molecular Modeling"],
+      models: [
+        { id: "alphafold", name: "AlphaFold 3", type: "Analysis" },
+        { id: "structural-analysis", name: "Structure Analyzer", type: "Analysis" },
+        { id: "molecular-dynamics", name: "Molecular Dynamics", type: "Analysis" }
+      ]
     }
   ];
+
+  const currentProvider = providers.find(p => p.id === selectedProvider);
+  const availableModels = currentProvider?.models || [];
+
+  // Auto-select first model when provider changes
+  const handleProviderChange = (providerId: string) => {
+    setSelectedProvider(providerId);
+    const provider = providers.find(p => p.id === providerId);
+    if (provider && provider.models.length > 0) {
+      setSelectedModel(provider.models[0].id);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim() && !imageUrl.trim()) {
       toast.error("Please enter a description or image URL");
+      return;
+    }
+
+    if (!selectedModel) {
+      toast.error("Please select a model");
       return;
     }
 
@@ -86,7 +121,8 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           } else {
             result = await advancedAI.falAI.generate3DModel(prompt, {
               style: falStyle,
-              quality: falQuality as 'low' | 'medium' | 'high'
+              quality: falQuality as 'low' | 'medium' | 'high',
+              model: selectedModel
             });
           }
           break;
@@ -95,22 +131,27 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           result = await advancedAI.stabilityAI.generateImage(prompt, {
             width: parseInt(imageSize),
             height: parseInt(imageSize),
-            style: stabilityStyle
+            style: stabilityStyle,
+            model: selectedModel
           });
           break;
           
         case 'replicate':
-          result = await advancedAI.replicate.generate3DFromText(prompt);
+          if (selectedModel === '3d-generation') {
+            result = await advancedAI.replicate.generate3DFromText(prompt);
+          } else {
+            result = await advancedAI.replicate.processWithModel(selectedModel, prompt);
+          }
           break;
           
         case 'deepmind':
-          // For demo purposes, creating a mock structural analysis
           result = {
-            description: `Structural analysis of: ${prompt}`,
+            description: `${selectedModel} analysis of: ${prompt}`,
             analysis: {
               stability_score: 0.85,
               weak_points: ["Joint connections", "Load distribution"],
-              recommendations: ["Reinforce corner joints", "Add support beams"]
+              recommendations: ["Reinforce corner joints", "Add support beams"],
+              model_used: selectedModel
             }
           };
           break;
@@ -135,13 +176,14 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
         metadata: {
           prompt,
           provider: selectedProvider,
+          model: selectedModel,
           timestamp: new Date().toISOString(),
           ...result
         }
       };
 
       onGenerate(cadData);
-      toast.success(`3D model generated with ${providers.find(p => p.id === selectedProvider)?.name}!`);
+      toast.success(`Generated with ${currentProvider?.name} ${selectedModel}!`);
       setPrompt("");
       setImageUrl("");
     } catch (error) {
@@ -178,7 +220,7 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
       <CardContent className="space-y-4">
         <div>
           <Label>AI Provider</Label>
-          <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+          <Select value={selectedProvider} onValueChange={handleProviderChange}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -200,6 +242,40 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
             </SelectContent>
           </Select>
         </div>
+
+        {currentProvider && (
+          <div>
+            <Label>Model</Label>
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a model..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableModels.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    <div>
+                      <div className="font-medium">{model.name}</div>
+                      <div className="text-xs text-gray-500">Type: {model.type}</div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {currentProvider && (
+          <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+            <div className="text-sm font-medium mb-2">Capabilities:</div>
+            <div className="flex flex-wrap gap-1">
+              {currentProvider.capabilities.map((capability) => (
+                <Badge key={capability} variant="secondary" className="text-xs">
+                  {capability}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="text" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -296,21 +372,9 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           </div>
         )}
 
-        <div className="flex flex-wrap gap-1">
-          <Badge variant="secondary" className="text-xs">
-            AI Powered
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            Multi-Provider
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            Professional
-          </Badge>
-        </div>
-
         <Button
           onClick={handleGenerate}
-          disabled={isGenerating || (!prompt.trim() && !imageUrl.trim())}
+          disabled={isGenerating || (!prompt.trim() && !imageUrl.trim()) || !selectedModel}
           className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
         >
           {isGenerating ? (
@@ -321,7 +385,7 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           ) : (
             <>
               <WandSparkles className="mr-2 h-4 w-4" />
-              Generate with {providers.find(p => p.id === selectedProvider)?.name}
+              Generate with {currentProvider?.name}
             </>
           )}
         </Button>
