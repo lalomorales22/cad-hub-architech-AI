@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,9 +74,9 @@ export const ImageToCAD = () => {
   };
 
   const processImage = async (imageId: number) => {
-    const anthropicKey = localStorage.getItem('anthropic_api_key');
-    if (!anthropicKey) {
-      toast.error("Anthropic API key required. Please add it in Settings.");
+    const openAIKey = localStorage.getItem('openai_api_key');
+    if (!openAIKey) {
+      toast.error("OpenAI API key required. Please add it in Settings.");
       return;
     }
 
@@ -141,15 +140,15 @@ export const ImageToCAD = () => {
         {/* API Key Status */}
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-2 h-2 rounded-full ${localStorage.getItem('anthropic_api_key') ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${localStorage.getItem('openai_api_key') ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="text-sm text-gray-300">
-              {localStorage.getItem('anthropic_api_key') ? 'Anthropic Connected' : 'API Key Required'}
+              {localStorage.getItem('openai_api_key') ? 'OpenAI Connected' : 'API Key Required'}
             </span>
           </div>
-          {!localStorage.getItem('anthropic_api_key') && (
+          {!localStorage.getItem('openai_api_key') && (
             <p className="text-xs text-amber-400 flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              Add Anthropic API key in Settings
+              Add OpenAI API key in Settings
             </p>
           )}
         </div>
@@ -269,7 +268,7 @@ export const ImageToCAD = () => {
                           <Button
                             size="sm"
                             onClick={() => processImage(image.id)}
-                            disabled={isProcessing || !localStorage.getItem('anthropic_api_key')}
+                            disabled={isProcessing || !localStorage.getItem('openai_api_key')}
                             className="h-6 bg-cyan-600 hover:bg-cyan-500 text-white text-xs"
                           >
                             <Zap className="h-3 w-3 mr-1" />
