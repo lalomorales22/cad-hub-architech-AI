@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AdvancedAIWidget } from './AdvancedAIWidget';
 import { AIAgent } from './AIAgent';
@@ -18,6 +17,7 @@ import { CostEstimator } from './CostEstimator';
 import { ParametricStudio } from './ParametricStudio';
 import { ThreeJSCanvas } from './ThreeJSCanvas';
 import { StatsOverview } from './StatsOverview';
+import { RecentFiles } from './RecentFiles';
 
 interface MainWorkspaceProps {
   theme: 'dark' | 'light';
@@ -164,10 +164,7 @@ export const MainWorkspace = ({ theme, activeProject, currentView }: MainWorkspa
       case 'files':
         return (
           <div className="w-full h-full p-6 overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6">File Manager</h2>
-            <div className="text-center text-gray-500 mt-20">
-              File management interface coming soon...
-            </div>
+            <RecentFiles />
           </div>
         );
       
