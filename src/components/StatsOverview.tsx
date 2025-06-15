@@ -43,10 +43,10 @@ export const StatsOverview = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">{stat.title}</p>
-                <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
+                <p className="text-muted-foreground text-sm font-medium mb-2">{stat.title}</p>
+                <p className="text-3xl font-bold text-foreground">{stat.value}</p>
               </div>
-              <stat.icon className={`h-8 w-8 ${stat.color}`} />
+              <stat.icon className={`h-10 w-10 ${stat.color}`} />
             </div>
           </CardContent>
         </Card>
@@ -54,4 +54,3 @@ export const StatsOverview = () => {
     </div>
   );
 };
-
