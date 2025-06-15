@@ -24,6 +24,8 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate, currentView }: SidebarProps) => {
+  const [showProfile, setShowProfile] = useState(false);
+
   const menuItems = [
     { 
       title: "WORKSPACE", 
@@ -51,7 +53,7 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
 
   return (
     <div className={cn(
-      "bg-gray-950 border-r border-gray-800 flex flex-col transition-all duration-300",
+      "bg-gray-950 border-r border-gray-800 flex flex-col transition-all duration-300 relative",
       collapsed ? "w-16" : "w-72"
     )}>
       {/* Logo/Brand */}
@@ -114,7 +116,10 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
 
       {/* User Profile */}
       <div className="p-4">
-        <div className="flex items-center space-x-3">
+        <div 
+          className="flex items-center space-x-3 cursor-pointer hover:bg-gray-800 p-2 rounded-lg transition-colors"
+          onClick={() => setShowProfile(!showProfile)}
+        >
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-600 text-white font-semibold">
               CH
@@ -137,6 +142,43 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
           )}
         </div>
       </div>
+
+      {/* Profile Dropdown */}
+      {showProfile && !collapsed && (
+        <div className="absolute bottom-20 left-4 right-4 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+          <div className="p-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => {
+                onNavigate("profile");
+                setShowProfile(false);
+              }}
+            >
+              <User className="h-4 w-4 mr-3" />
+              View Profile
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => {
+                onNavigate("settings");
+                setShowProfile(false);
+              }}
+            >
+              <Settings className="h-4 w-4 mr-3" />
+              Settings
+            </Button>
+            <Separator className="bg-gray-700 my-2" />
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20"
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

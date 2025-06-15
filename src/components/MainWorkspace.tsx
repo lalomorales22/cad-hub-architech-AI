@@ -10,9 +10,11 @@ import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { ToolPalette } from "@/components/ToolPalette";
 import { TextToCAD } from "@/components/TextToCAD";
 import { ImageToCAD } from "@/components/ImageToCAD";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SettingsPage } from "@/components/SettingsPage";
+import { HelpPage } from "@/components/HelpPage";
+import { ProfilePage } from "@/components/ProfilePage";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, LayoutGrid, Files, BookOpen, BarChart3, Wrench } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 interface MainWorkspaceProps {
   activeProject: string;
@@ -78,6 +80,15 @@ export const MainWorkspace = ({ activeProject, currentView }: MainWorkspaceProps
 
       case "image-to-cad":
         return <ImageToCAD />;
+
+      case "settings":
+        return <SettingsPage />;
+
+      case "help":
+        return <HelpPage />;
+
+      case "profile":
+        return <ProfilePage />;
 
       case "workspace":
         return (
