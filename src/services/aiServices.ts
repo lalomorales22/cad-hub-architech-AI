@@ -179,13 +179,20 @@ Create realistic 3D models with proper proportions. Use multiple shapes to creat
       // Convert image to base64 if needed
       const imageBase64 = await this.imageUrlToBase64(request.imageUrl);
       
-      const systemPrompt = `You are a CAD generation assistant. Analyze this image and convert it into 3D CAD model data.
+      const systemPrompt = `You are an expert 3D CAD modeling assistant. Analyze the provided image and create a detailed 3D model representation using basic geometric shapes.
 
-CRITICAL: You MUST return ONLY valid JSON with NO other text, explanations, or markdown formatting.
+Your task:
+1. Carefully examine the image to identify all major structural elements, objects, and components
+2. Convert these visual elements into 3D geometric primitives (cubes, spheres, cylinders, planes)
+3. Create realistic proportions and spatial relationships between objects
+4. Consider the user's additional prompt to focus on specific aspects
 
-Return this exact JSON structure:
+CRITICAL RESPONSE FORMAT:
+You MUST respond with ONLY a valid JSON object. No explanations, no markdown, no additional text.
+
+JSON Structure:
 {
-  "description": "Brief description of what you see in the image",
+  "description": "Brief description of the 3D model created",
   "coordinates": [],
   "shapes": [
     {
@@ -197,15 +204,35 @@ Return this exact JSON structure:
   ]
 }
 
-Focus on the main structural elements visible in the image. Create realistic 3D representations using basic shapes. If you see a building, create walls, roof, etc. If you see furniture, create the main components.
+Guidelines:
+- Use realistic measurements (e.g., a chair seat might be 0.5m high, 0.6m wide)
+- Position objects logically in 3D space (y=0 is ground level)
+- Create multiple shapes to represent complex objects
+- For furniture: break down into seat, back, legs, etc.
+- For buildings: separate walls, roof, windows, doors
+- For vehicles: body, wheels, windows, etc.
+
+Example for a simple chair:
+{
+  "description": "Wooden chair with backrest",
+  "coordinates": [],
+  "shapes": [
+    {"type": "cube", "position": {"x": 0, "y": 0.25, "z": 0}, "scale": {"x": 0.5, "y": 0.05, "z": 0.5}, "rotation": {"x": 0, "y": 0, "z": 0}},
+    {"type": "cube", "position": {"x": 0, "y": 0.6, "z": -0.2}, "scale": {"x": 0.5, "y": 0.7, "z": 0.05}, "rotation": {"x": 0, "y": 0, "z": 0}},
+    {"type": "cube", "position": {"x": -0.2, "y": 0.125, "z": -0.2}, "scale": {"x": 0.05, "y": 0.25, "z": 0.05}, "rotation": {"x": 0, "y": 0, "z": 0}},
+    {"type": "cube", "position": {"x": 0.2, "y": 0.125, "z": -0.2}, "scale": {"x": 0.05, "y": 0.25, "z": 0.05}, "rotation": {"x": 0, "y": 0, "z": 0}},
+    {"type": "cube", "position": {"x": -0.2, "y": 0.125, "z": 0.2}, "scale": {"x": 0.05, "y": 0.25, "z": 0.05}, "rotation": {"x": 0, "y": 0, "z": 0}},
+    {"type": "cube", "position": {"x": 0.2, "y": 0.125, "z": 0.2}, "scale": {"x": 0.05, "y": 0.25, "z": 0.05}, "rotation": {"x": 0, "y": 0, "z": 0}}
+  ]
+}
 
 IMPORTANT: Return ONLY the JSON object, nothing else.`;
       
-      const userPrompt = `Analyze this architectural image and convert it into 3D CAD model data. ${request.prompt ? `Additional context: ${request.prompt}` : ''} 
+      const userPrompt = `Analyze this image and create a detailed 3D CAD model. ${request.prompt ? `User's specific request: "${request.prompt}"` : 'Focus on the main objects and structures visible.'} 
 
-Create a detailed 3D model with multiple shapes representing the main structural elements you can identify. Return ONLY the JSON object.`;
+Create a comprehensive 3D representation using multiple geometric shapes. Pay attention to proportions, spatial relationships, and realistic measurements. Return ONLY the JSON object as specified.`;
 
-      console.log('Making OpenAI API request...');
+      console.log('Making OpenAI Vision API request...');
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -215,7 +242,7 @@ Create a detailed 3D model with multiple shapes representing the main structural
         },
         body: JSON.stringify({
           model: 'gpt-4o',
-          max_tokens: 2000,
+          max_tokens: 3000,
           messages: [
             {
               role: 'system',
@@ -238,7 +265,8 @@ Create a detailed 3D model with multiple shapes representing the main structural
               ]
             }
           ],
-          temperature: 0.1
+          temperature: 0.1,
+          response_format: { type: "json_object" }
         })
       });
 
@@ -251,43 +279,58 @@ Create a detailed 3D model with multiple shapes representing the main structural
       const data = await response.json();
       const content = data.choices[0].message.content;
       
-      console.log('OpenAI response content:', content);
+      console.log('OpenAI vision response:', content);
       
-      // Parse the JSON response with better error handling
+      // Parse the JSON response
       let cadData;
       try {
-        // Clean up the response in case there's markdown or extra text
-        let cleanContent = content.trim();
-        
-        // Remove markdown code blocks if present
-        cleanContent = cleanContent.replace(/```json\s*|\s*```/g, '');
-        cleanContent = cleanContent.replace(/```\s*|\s*```/g, '');
-        
-        // Find JSON object in the response
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          cleanContent = jsonMatch[0];
-        }
-        
-        console.log('Cleaned content for parsing:', cleanContent);
-        cadData = JSON.parse(cleanContent);
+        cadData = JSON.parse(content);
         
         // Validate the structure
-        if (!cadData.shapes || !Array.isArray(cadData.shapes)) {
-          throw new Error('Invalid CAD data structure');
+        if (!cadData.shapes || !Array.isArray(cadData.shapes) || cadData.shapes.length === 0) {
+          throw new Error('Invalid CAD data structure - no shapes found');
         }
+        
+        // Validate each shape
+        cadData.shapes = cadData.shapes.map((shape: any) => ({
+          type: shape.type || 'cube',
+          position: {
+            x: typeof shape.position?.x === 'number' ? shape.position.x : 0,
+            y: typeof shape.position?.y === 'number' ? shape.position.y : 0,
+            z: typeof shape.position?.z === 'number' ? shape.position.z : 0
+          },
+          scale: {
+            x: typeof shape.scale?.x === 'number' ? Math.max(0.01, shape.scale.x) : 1,
+            y: typeof shape.scale?.y === 'number' ? Math.max(0.01, shape.scale.y) : 1,
+            z: typeof shape.scale?.z === 'number' ? Math.max(0.01, shape.scale.z) : 1
+          },
+          rotation: {
+            x: typeof shape.rotation?.x === 'number' ? shape.rotation.x : 0,
+            y: typeof shape.rotation?.y === 'number' ? shape.rotation.y : 0,
+            z: typeof shape.rotation?.z === 'number' ? shape.rotation.z : 0
+          }
+        }));
+        
+        console.log('Successfully parsed CAD data with', cadData.shapes.length, 'shapes');
         
       } catch (parseError) {
         console.error('JSON parsing failed:', parseError, 'Content:', content);
         toast.error("AI returned invalid data format. Creating fallback model.");
         
-        // Create a more interesting fallback based on the prompt
-        const promptWords = (request.prompt || '').toLowerCase();
+        // Create a meaningful fallback based on the prompt
+        const promptLower = (request.prompt || '').toLowerCase();
         let fallbackShapes = [];
         
-        if (promptWords.includes('house') || promptWords.includes('building')) {
+        if (promptLower.includes('chair')) {
           fallbackShapes = [
-            { type: 'cube', position: {x: 0, y: 1, z: 0}, scale: {x: 4, y: 2, z: 3}, rotation: {x: 0, y: 0, z: 0} },
+            { type: 'cube', position: {x: 0, y: 0.25, z: 0}, scale: {x: 0.5, y: 0.05, z: 0.5}, rotation: {x: 0, y: 0, z: 0} },
+            { type: 'cube', position: {x: 0, y: 0.6, z: -0.2}, scale: {x: 0.5, y: 0.7, z: 0.05}, rotation: {x: 0, y: 0, z: 0} },
+            { type: 'cube', position: {x: -0.2, y: 0.125, z: -0.2}, scale: {x: 0.05, y: 0.25, z: 0.05}, rotation: {x: 0, y: 0, z: 0} },
+            { type: 'cube', position: {x: 0.2, y: 0.125, z: -0.2}, scale: {x: 0.05, y: 0.25, z: 0.05}, rotation: {x: 0, y: 0, z: 0} }
+          ];
+        } else if (promptLower.includes('house') || promptLower.includes('building')) {
+          fallbackShapes = [
+            { type: 'cube', position: {x: 0, y: 1.5, z: 0}, scale: {x: 4, y: 3, z: 3}, rotation: {x: 0, y: 0, z: 0} },
             { type: 'cube', position: {x: 0, y: 3.5, z: 0}, scale: {x: 4.5, y: 1, z: 3.5}, rotation: {x: 0, y: 0, z: 0} }
           ];
         } else {
@@ -297,7 +340,7 @@ Create a detailed 3D model with multiple shapes representing the main structural
         }
         
         cadData = {
-          description: "Fallback model - AI response was invalid",
+          description: "Fallback model - analyzing uploaded image",
           coordinates: [],
           shapes: fallbackShapes
         };
@@ -305,15 +348,17 @@ Create a detailed 3D model with multiple shapes representing the main structural
 
       const result = {
         id: crypto.randomUUID(),
-        ...cadData,
+        description: cadData.description || "3D model from image analysis",
+        coordinates: cadData.coordinates || [],
+        shapes: cadData.shapes,
         metadata: {
           prompt: request.prompt || "Image analysis",
           timestamp: new Date().toISOString(),
-          model: 'gpt-4o'
+          model: 'gpt-4o-vision'
         }
       };
 
-      console.log('Generated CAD result:', result);
+      console.log('Final CAD result:', result);
       return result;
       
     } catch (error) {
