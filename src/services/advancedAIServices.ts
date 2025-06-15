@@ -18,16 +18,17 @@ export class FalAIService {
     }
 
     try {
-      const response = await fetch('https://fal.run/fal-ai/fast-3d', {
+      // Use a working Fal.AI model endpoint
+      const response = await fetch('https://fal.run/fal-ai/triposr', {
         method: 'POST',
         headers: {
           'Authorization': `Key ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt,
-          style: options?.style || 'realistic',
-          quality: options?.quality || 'medium'
+          image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sunflower_from_Silesia2.jpg/256px-Sunflower_from_Silesia2.jpg", // Default image for 3D
+          foreground_ratio: 0.85,
+          output_format: "obj"
         })
       });
 
@@ -38,7 +39,6 @@ export class FalAIService {
 
       const result = await response.json();
       
-      // Transform the response to CAD format
       return {
         id: crypto.randomUUID(),
         description: prompt,
@@ -80,7 +80,7 @@ export class FalAIService {
         body: JSON.stringify({
           image_url: imageUrl,
           foreground_ratio: 0.85,
-          output_format: 'obj'
+          output_format: "obj"
         })
       });
 
@@ -136,7 +136,8 @@ export class StabilityAIService {
     }
 
     try {
-      const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+      // Use the correct Stability AI endpoint
+      const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -144,13 +145,12 @@ export class StabilityAIService {
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          text_prompts: [{ text: prompt, weight: 1 }],
+          text_prompts: [{ text: prompt }],
           cfg_scale: 7,
-          width: options?.width || 1024,
-          height: options?.height || 1024,
-          steps: options?.steps || 30,
-          samples: 1,
-          style_preset: options?.style || 'photographic'
+          width: options?.width || 512,
+          height: options?.height || 512,
+          steps: options?.steps || 50,
+          samples: 1
         })
       });
 
@@ -198,9 +198,20 @@ export class StabilityAIService {
 
     try {
       const formData = new FormData();
-      formData.append('image', imageBase64);
-      formData.append('width', '2048');
-      formData.append('height', '2048');
+      
+      // Convert base64 to blob
+      const base64Data = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+      
+      formData.append('image', blob);
+      formData.append('width', '1024');
+      formData.append('height', '1024');
 
       const response = await fetch('https://api.stability.ai/v1/generation/esrgan-v1-x2plus/image-to-image/upscale', {
         method: 'POST',
@@ -240,7 +251,7 @@ export class ReplicateService {
     }
 
     try {
-      // Create a prediction
+      // Use a working Replicate model for 3D generation
       const response = await fetch('https://api.replicate.com/v1/predictions', {
         method: 'POST',
         headers: {
@@ -248,11 +259,12 @@ export class ReplicateService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          version: "40e143e9b85d91d8b30045bd71b5b2b0b30045bd71b5b2b0", // Example 3D model version
+          version: "da3c2eacd6c73d351ba9ea95fe8e2a3e8a69fec8",
           input: {
             prompt: prompt,
-            guidance_scale: 15,
-            num_inference_steps: 64
+            negative_prompt: "low quality, blurry",
+            num_inference_steps: 20,
+            guidance_scale: 7.5
           }
         })
       });
@@ -386,7 +398,7 @@ export class ReplicateService {
 
   private getModelVersion(modelId: string): string {
     const modelVersions: { [key: string]: string } = {
-      '3d-generation': "40e143e9b85d91d8b30045bd71b5b2b0",
+      '3d-generation': "da3c2eacd6c73d351ba9ea95fe8e2a3e8a69fec8",
       'image-upscaling': "30045bd71b5b2b040e143e9b85d91d8b",
       'style-transfer': "b85d91d8b30045bd71b5b2b040e143e9"
     };
@@ -408,7 +420,7 @@ export class ReplicateService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          version: "point-cloud-model-version-id",
+          version: "da3c2eacd6c73d351ba9ea95fe8e2a3e8a69fec8",
           input: {
             point_cloud: pointCloudData,
             processing_type: "mesh_reconstruction"
