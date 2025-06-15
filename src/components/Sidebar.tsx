@@ -23,9 +23,10 @@ interface SidebarProps {
   onProjectSelect: (project: string) => void;
   onNavigate: (view: string) => void;
   currentView: string;
+  theme: 'dark' | 'light';
 }
 
-export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate, currentView }: SidebarProps) => {
+export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate, currentView, theme }: SidebarProps) => {
   const [showProfile, setShowProfile] = useState(false);
 
   const menuItems = [
@@ -53,9 +54,19 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
     }
   ];
 
+  // Theme-based styles
+  const sidebarBg = theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-950 border-gray-800';
+  const textPrimary = theme === 'light' ? 'text-gray-900' : 'text-white';
+  const textSecondary = theme === 'light' ? 'text-gray-600' : 'text-gray-400';
+  const textMuted = theme === 'light' ? 'text-gray-500' : 'text-gray-400';
+  const separatorColor = theme === 'light' ? 'bg-gray-200' : 'bg-gray-800';
+  const hoverBg = theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800/60';
+  const activeBg = theme === 'light' ? 'bg-gray-100 text-gray-900' : 'bg-gray-800/80 text-white';
+
   return (
     <div className={cn(
-      "bg-gray-950 border-r border-gray-800 flex flex-col transition-all duration-300 relative",
+      "border-r flex flex-col transition-all duration-300 relative",
+      sidebarBg,
       collapsed ? "w-16" : "w-72"
     )}>
       {/* Logo/Brand */}
@@ -66,21 +77,21 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-xl font-bold text-white tracking-wider">CAD HUB</h1>
-              <p className="text-xs text-gray-400">Professional Edition</p>
+              <h1 className={`text-xl font-bold tracking-wider ${textPrimary}`}>CAD HUB</h1>
+              <p className={`text-xs ${textMuted}`}>Professional Edition</p>
             </div>
           )}
         </div>
       </div>
 
-      <Separator className="bg-gray-800" />
+      <Separator className={separatorColor} />
 
       {/* Navigation Menu */}
       <div className="flex-1 p-4 space-y-6 overflow-y-auto">
         {menuItems.map((section, index) => (
           <div key={index} className="space-y-2">
             {!collapsed && (
-              <h3 className="text-gray-400 text-xs font-semibold tracking-wider px-2">
+              <h3 className={`text-xs font-semibold tracking-wider px-2 ${textMuted}`}>
                 {section.title}
               </h3>
             )}
@@ -91,9 +102,9 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
                   variant="ghost"
                   onClick={() => onNavigate(item.view)}
                   className={cn(
-                    "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800/60",
+                    `w-full justify-start ${textSecondary} ${hoverBg}`,
                     collapsed ? "px-2 justify-center" : "px-3",
-                    item.active && "bg-gray-800/80 text-white"
+                    item.active && activeBg
                   )}
                 >
                   <item.icon className={cn("h-4 w-4", !collapsed && "mr-3")} />
@@ -114,12 +125,12 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
         ))}
       </div>
 
-      <Separator className="bg-gray-800" />
+      <Separator className={separatorColor} />
 
       {/* User Profile */}
       <div className="p-4">
         <div 
-          className="flex items-center space-x-3 cursor-pointer hover:bg-gray-800 p-2 rounded-lg transition-colors"
+          className={`flex items-center space-x-3 cursor-pointer p-2 rounded-lg transition-colors ${hoverBg}`}
           onClick={() => setShowProfile(!showProfile)}
         >
           <Avatar className="h-10 w-10">
@@ -129,15 +140,15 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
           </Avatar>
           {!collapsed && (
             <div className="flex-1">
-              <p className="text-white font-medium">Corey Hilton</p>
-              <p className="text-gray-400 text-sm">Senior Architect</p>
+              <p className={`font-medium ${textPrimary}`}>Corey Hilton</p>
+              <p className={`text-sm ${textMuted}`}>Senior Architect</p>
             </div>
           )}
           {!collapsed && (
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-white"
+              className={`${textSecondary} hover:${textPrimary}`}
             >
               <Bell className="h-4 w-4" />
             </Button>
@@ -147,11 +158,15 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
 
       {/* Profile Dropdown */}
       {showProfile && !collapsed && (
-        <div className="absolute bottom-20 left-4 right-4 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+        <div className={`absolute bottom-20 left-4 right-4 border rounded-lg shadow-xl z-50 ${
+          theme === 'light' 
+            ? 'bg-white border-gray-200' 
+            : 'bg-gray-800 border-gray-700'
+        }`}>
           <div className="p-2">
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700"
+              className={`w-full justify-start ${textSecondary} ${hoverBg}`}
               onClick={() => {
                 onNavigate("profile");
                 setShowProfile(false);
@@ -162,7 +177,7 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700"
+              className={`w-full justify-start ${textSecondary} ${hoverBg}`}
               onClick={() => {
                 onNavigate("settings");
                 setShowProfile(false);
@@ -171,10 +186,12 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
               <Settings className="h-4 w-4 mr-3" />
               Settings
             </Button>
-            <Separator className="bg-gray-700 my-2" />
+            <Separator className={`${separatorColor} my-2`} />
             <Button
               variant="ghost"
-              className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20"
+              className={`w-full justify-start text-red-400 hover:text-red-300 ${
+                theme === 'light' ? 'hover:bg-red-50' : 'hover:bg-red-900/20'
+              }`}
             >
               Sign Out
             </Button>
