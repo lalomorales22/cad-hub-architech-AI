@@ -104,6 +104,11 @@ export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImpor
     ? 'hover:bg-gray-100'
     : 'hover:bg-gray-700';
 
+  // Lighter background for tool sections
+  const toolSectionBg = theme === 'light'
+    ? 'bg-gray-50'
+    : 'bg-gray-700';
+
   return (
     <Card className={`w-72 h-full ${themeClasses}`}>
       <CardHeader className="pb-3">
@@ -138,45 +143,47 @@ export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImpor
         <Separator />
 
         {/* Tool Categories */}
-        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mx-4 my-3" style={{ width: 'calc(100% - 2rem)' }}>
-            <TabsTrigger value="basic" className="text-xs">Basic</TabsTrigger>
-            <TabsTrigger value="architecture" className="text-xs">Arch</TabsTrigger>
-            <TabsTrigger value="furniture" className="text-xs">Furn</TabsTrigger>
-          </TabsList>
+        <div className={`mx-4 my-3 rounded-lg ${toolSectionBg} p-3`}>
+          <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="basic" className="text-xs">Basic</TabsTrigger>
+              <TabsTrigger value="architecture" className="text-xs">Arch</TabsTrigger>
+              <TabsTrigger value="furniture" className="text-xs">Furn</TabsTrigger>
+            </TabsList>
 
-          {Object.entries(toolCategories).slice(0, 3).map(([key, category]) => (
-            <TabsContent key={key} value={key} className="px-4 mt-0">
-              <div className="space-y-1">
-                {category.tools.map((tool) => {
-                  const Icon = tool.icon;
-                  const isSelected = selectedTool === tool.id;
-                  
-                  return (
-                    <Button
-                      key={tool.id}
-                      onClick={() => handleToolClick(tool.id)}
-                      variant={isSelected ? "default" : "ghost"}
-                      className={`w-full justify-start h-10 ${!isSelected ? buttonTheme : ''}`}
-                      size="sm"
-                    >
-                      <Icon className="mr-3 h-4 w-4" />
-                      <div className="text-left flex-1">
-                        <div className="text-sm font-medium">{tool.label}</div>
-                        <div className="text-xs opacity-70">{tool.desc}</div>
-                      </div>
-                    </Button>
-                  );
-                })}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+            {Object.entries(toolCategories).slice(0, 3).map(([key, category]) => (
+              <TabsContent key={key} value={key} className="mt-3">
+                <div className="space-y-1">
+                  {category.tools.map((tool) => {
+                    const Icon = tool.icon;
+                    const isSelected = selectedTool === tool.id;
+                    
+                    return (
+                      <Button
+                        key={tool.id}
+                        onClick={() => handleToolClick(tool.id)}
+                        variant={isSelected ? "default" : "ghost"}
+                        className={`w-full justify-start h-10 ${!isSelected ? buttonTheme : ''}`}
+                        size="sm"
+                      >
+                        <Icon className="mr-3 h-4 w-4" />
+                        <div className="text-left flex-1">
+                          <div className="text-sm font-medium">{tool.label}</div>
+                          <div className="text-xs opacity-70">{tool.desc}</div>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
 
         <Separator />
 
         {/* Additional Categories */}
-        <div className="px-4 py-3">
+        <div className={`mx-4 my-3 rounded-lg ${toolSectionBg} p-3`}>
           <div className="text-xs font-semibold mb-2 opacity-70">MORE TOOLS</div>
           <div className="space-y-1">
             {Object.entries(toolCategories).slice(3).map(([key, category]) => (
@@ -199,28 +206,30 @@ export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImpor
         <Separator />
 
         {/* Action Tools */}
-        <div className="px-4 py-3 space-y-1">
+        <div className={`mx-4 my-3 rounded-lg ${toolSectionBg} p-3`}>
           <div className="text-xs font-semibold mb-2 opacity-70">ACTIONS</div>
-          {[
-            { id: "copy", icon: Copy, label: "Duplicate" },
-            { id: "rotate", icon: RotateCcw, label: "Rotate" },
-            { id: "delete", icon: Trash2, label: "Delete" },
-            { id: "export", icon: Download, label: "Export Scene" },
-          ].map((action) => {
-            const Icon = action.icon;
-            return (
-              <Button
-                key={action.id}
-                onClick={() => handleToolClick(action.id)}
-                variant="ghost"
-                className={`w-full justify-start ${buttonTheme}`}
-                size="sm"
-              >
-                <Icon className="mr-3 h-4 w-4" />
-                {action.label}
-              </Button>
-            );
-          })}
+          <div className="space-y-1">
+            {[
+              { id: "copy", icon: Copy, label: "Duplicate" },
+              { id: "rotate", icon: RotateCcw, label: "Rotate" },
+              { id: "delete", icon: Trash2, label: "Delete" },
+              { id: "export", icon: Download, label: "Export Scene" },
+            ].map((action) => {
+              const Icon = action.icon;
+              return (
+                <Button
+                  key={action.id}
+                  onClick={() => handleToolClick(action.id)}
+                  variant="ghost"
+                  className={`w-full justify-start ${buttonTheme}`}
+                  size="sm"
+                >
+                  <Icon className="mr-3 h-4 w-4" />
+                  {action.label}
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>

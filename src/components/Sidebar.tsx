@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -157,7 +156,7 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
                         variant="outline"
                         size="sm"
                         className={`w-full ${theme === 'light' 
-                          ? 'border-gray-300 hover:bg-gray-200 text-gray-700' 
+                          ? 'border-gray-300 hover:bg-gray-200 text-gray-900' 
                           : 'border-gray-600 hover:bg-gray-700 text-gray-300'
                         }`}
                       >
