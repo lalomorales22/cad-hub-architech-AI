@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, DollarSign, MoreHorizontal, Plus, Edit, Trash } from "lucide-react";
+import { Calendar, MapPin, Users, DollarSign, Plus, Edit, Trash } from "lucide-react";
 import { mockProjects, DatabaseManager } from "@/lib/database";
 import { useState } from "react";
 import { ProjectDialog } from "@/components/ProjectDialog";
@@ -97,24 +97,13 @@ export const ProjectGrid = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
           <ContextMenu key={project.id}>
-            <ContextMenuTrigger>
+            <ContextMenuTrigger asChild>
               <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-white text-lg font-medium line-clamp-1">
                       {project.name}
                     </CardTitle>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-gray-400 hover:text-white"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
                   </div>
                   <p className="text-gray-300 text-sm line-clamp-2">{project.description}</p>
                 </CardHeader>
