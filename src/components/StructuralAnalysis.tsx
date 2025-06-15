@@ -202,7 +202,7 @@ export const StructuralAnalysis = () => {
                     {Object.entries(analysisResults.loadAnalysis).map(([key, value]) => (
                       <div key={key} className="flex justify-between text-gray-300">
                         <span>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</span>
-                        <span>{value}</span>
+                        <span>{String(value)}</span>
                       </div>
                     ))}
                   </div>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -86,6 +87,11 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
       {!collapsed && <span>{item.label}</span>}
     </Button>
   );
+
+  const handleProjectSave = (project: any) => {
+    // Handle project save logic here
+    setShowProjectDialog(false);
+  };
 
   return (
     <>
@@ -199,9 +205,8 @@ export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate,
       <ProjectDialog
         open={showProjectDialog}
         onOpenChange={setShowProjectDialog}
-        projects={projects}
-        activeProject={activeProject}
-        onProjectSelect={onProjectSelect}
+        onSave={handleProjectSave}
+        project={null}
       />
     </>
   );
