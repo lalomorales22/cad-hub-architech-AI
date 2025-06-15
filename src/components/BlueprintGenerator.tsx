@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Download, Loader2 } from "lucide-react";
 import { aiService } from "@/services/aiServices";
+import { fileService } from "@/services/fileServices";
 import { toast } from "sonner";
 
 export const BlueprintGenerator = () => {
@@ -57,6 +58,26 @@ export const BlueprintGenerator = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!generatedBlueprint) return;
+    
+    await fileService.exportFile({
+      format: 'pdf',
+      filename: `blueprint_${formData.buildingType}_${Date.now()}`,
+      data: generatedBlueprint
+    });
+  };
+
+  const handleExportDWG = async () => {
+    if (!generatedBlueprint) return;
+    
+    await fileService.exportFile({
+      format: 'dwg', 
+      filename: `blueprint_${formData.buildingType}_${Date.now()}`,
+      data: generatedBlueprint
+    });
   };
 
   return (
@@ -222,15 +243,35 @@ export const BlueprintGenerator = () => {
                   <div className="text-gray-400 text-xs">
                     <p>Generated: {new Date(generatedBlueprint.metadata.timestamp).toLocaleString()}</p>
                     <p>Components: {generatedBlueprint.shapes.length} elements</p>
+                    <p>Building Type: {formData.buildingType}</p>
+                    <p>Lot Size: {formData.lotWidth} x {formData.lotDepth} ft</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-700 p-4 rounded-lg">
+                  <h4 className="text-white font-semibold mb-2">Architectural Specifications</h4>
+                  <div className="text-sm text-gray-300 space-y-1">
+                    <p><strong>Total Floor Area:</strong> {Math.round(parseInt(formData.lotWidth || "0") * parseInt(formData.lotDepth || "0") * 0.4)} sq ft</p>
+                    <p><strong>Building Coverage:</strong> 40% of lot</p>
+                    <p><strong>Setbacks:</strong> Front: 25ft, Side: 10ft, Rear: 20ft</p>
+                    <p><strong>Ceiling Height:</strong> 9 feet standard</p>
+                    <p><strong>Foundation:</strong> Concrete slab on grade</p>
+                    <p><strong>Framing:</strong> Wood frame construction</p>
                   </div>
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button className="flex-1 bg-green-600 hover:bg-green-700">
+                  <Button 
+                    onClick={handleDownloadPDF}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                   </Button>
-                  <Button className="flex-1 bg-purple-600 hover:bg-purple-700">
+                  <Button 
+                    onClick={handleExportDWG}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Export DWG
                   </Button>

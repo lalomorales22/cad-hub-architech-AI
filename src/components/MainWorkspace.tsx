@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ThreeJSCanvas } from "@/components/ThreeJSCanvas";
 import { Chat } from "@/components/Chat";
@@ -18,8 +17,9 @@ import { ParametricStudio } from "@/components/ParametricStudio";
 import { SettingsPage } from "@/components/SettingsPage";
 import { HelpPage } from "@/components/HelpPage";
 import { ProfilePage } from "@/components/ProfilePage";
+import { ModelImporter } from "@/components/ModelImporter";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Upload } from "lucide-react";
 
 interface MainWorkspaceProps {
   activeProject: string;
@@ -29,11 +29,18 @@ interface MainWorkspaceProps {
 
 export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspaceProps) => {
   const [showChat, setShowChat] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
 
   // Apply theme classes to the workspace
   const themeClasses = theme === 'light' 
     ? 'bg-gray-50 text-gray-900' 
     : 'bg-gray-900 text-white';
+
+  const handleImportModel = (modelData: any) => {
+    // Handle imported model data - could integrate with ThreeJSCanvas
+    console.log('Imported model:', modelData);
+    // In a real implementation, this would update the 3D scene
+  };
 
   // Render different views based on currentView
   const renderCurrentView = () => {
@@ -153,6 +160,15 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
                     3D Modeling Workspace
                   </p>
                 </div>
+
+                {/* Import Model Button */}
+                <Button
+                  onClick={() => setShowImporter(true)}
+                  className="absolute top-6 right-6 bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import 3D Model
+                </Button>
               </div>
             </div>
           </div>
@@ -194,6 +210,14 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
         <div className="fixed bottom-24 right-6 w-96 h-[32rem] shadow-2xl z-40">
           <Chat onClose={() => setShowChat(false)} />
         </div>
+      )}
+
+      {/* Model Importer */}
+      {showImporter && (
+        <ModelImporter
+          onImport={handleImportModel}
+          onClose={() => setShowImporter(false)}
+        />
       )}
     </div>
   );

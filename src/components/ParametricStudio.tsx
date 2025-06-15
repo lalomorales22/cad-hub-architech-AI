@@ -6,11 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Play, RefreshCw, Download, Settings } from "lucide-react";
+import { Zap, Play, RefreshCw, Download, Settings, Eye } from "lucide-react";
+import { ParametricDesignViewer } from "@/components/ParametricDesignViewer";
+import { aiService } from "@/services/aiServices";
+import { fileService } from "@/services/fileServices";
 import { toast } from "sonner";
 
 export const ParametricStudio = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedDesign, setSelectedDesign] = useState<any>(null);
   const [parameters, setParameters] = useState({
     buildingHeight: [25],
     floorArea: [3000],
@@ -31,14 +35,33 @@ export const ParametricStudio = () => {
   const generateVariations = async () => {
     setIsGenerating(true);
     try {
-      // Simulate parametric generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Generate multiple design variations using AI
+      const basePrompt = `Generate ${designType} building variations with height ${parameters.buildingHeight[0]}ft, area ${parameters.floorArea[0]} sqft, ${parameters.windowRatio[0]}% windows, roof pitch ${parameters.roofPitch[0]}/12, setbacks ${parameters.setbacks[0]}ft`;
+      
+      const aiResults = await Promise.all([
+        aiService.generateCADFromText({ 
+          prompt: `${basePrompt}. Modern minimalist style`, 
+          style: "modern",
+          complexity: "high" 
+        }),
+        aiService.generateCADFromText({ 
+          prompt: `${basePrompt}. Traditional classic style`, 
+          style: "traditional",
+          complexity: "high" 
+        }),
+        aiService.generateCADFromText({ 
+          prompt: `${basePrompt}. Contemporary eco-friendly style`, 
+          style: "contemporary",
+          complexity: "high" 
+        })
+      ]);
       
       const mockVariations = [
         {
           id: 1,
-          name: "Variation A",
+          name: "Modern Minimalist",
           preview: "🏠",
+          aiData: aiResults[0],
           parameters: {
             height: parameters.buildingHeight[0],
             area: parameters.floorArea[0],
@@ -47,44 +70,64 @@ export const ParametricStudio = () => {
           },
           score: 8.5,
           efficiency: "High",
-          cost: 420000
+          cost: Math.round(parameters.floorArea[0] * 180),
+          features: ["Open floor plan", "Large windows", "Flat roof sections", "Minimal exterior details"]
         },
         {
           id: 2,
-          name: "Variation B", 
-          preview: "🏢",
+          name: "Traditional Classic", 
+          preview: "🏘️",
+          aiData: aiResults[1],
           parameters: {
-            height: parameters.buildingHeight[0] * 1.2,
-            area: parameters.floorArea[0] * 0.9,
-            windows: parameters.windowRatio[0] * 1.1,
-            pitch: parameters.roofPitch[0] * 0.8
+            height: parameters.buildingHeight[0] * 1.1,
+            area: parameters.floorArea[0] * 0.95,
+            windows: parameters.windowRatio[0] * 0.8,
+            pitch: parameters.roofPitch[0] * 1.3
           },
           score: 7.8,
           efficiency: "Medium",
-          cost: 390000
+          cost: Math.round(parameters.floorArea[0] * 195),
+          features: ["Classic proportions", "Traditional materials", "Steep roof pitch", "Symmetrical design"]
         },
         {
           id: 3,
-          name: "Variation C",
-          preview: "🏘️", 
+          name: "Eco Contemporary",
+          preview: "🌿", 
+          aiData: aiResults[2],
           parameters: {
-            height: parameters.buildingHeight[0] * 0.8,
-            area: parameters.floorArea[0] * 1.1,
-            windows: parameters.windowRatio[0] * 0.9,
-            pitch: parameters.roofPitch[0] * 1.2
+            height: parameters.buildingHeight[0] * 0.9,
+            area: parameters.floorArea[0] * 1.05,
+            windows: parameters.windowRatio[0] * 1.2,
+            pitch: parameters.roofPitch[0] * 0.7
           },
           score: 9.2,
           efficiency: "Very High",
-          cost: 385000
+          cost: Math.round(parameters.floorArea[0] * 210),
+          features: ["Green roof system", "Solar integration", "Natural ventilation", "Sustainable materials"]
         }
       ];
 
       setVariations(mockVariations);
-      toast.success("Design variations generated!");
+      toast.success("AI-powered design variations generated!");
     } catch (error) {
+      console.error('Variation generation error:', error);
       toast.error("Generation failed. Please try again.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleViewDesign = (design: any) => {
+    setSelectedDesign(design);
+  };
+
+  const handleDownloadDesign = async (design: any) => {
+    if (design.aiData) {
+      await fileService.exportFile({
+        format: 'glb',
+        filename: `parametric_${design.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
+        data: design.aiData
+      });
     }
   };
 
@@ -219,7 +262,7 @@ export const ParametricStudio = () => {
                 ) : (
                   <>
                     <Zap className="mr-2 h-4 w-4" />
-                    Generate Variations
+                    Generate AI Variations
                   </>
                 )}
               </Button>
@@ -235,14 +278,14 @@ export const ParametricStudio = () => {
         <div className="lg:col-span-2">
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-white">Design Variations</CardTitle>
+              <CardTitle className="text-white">AI Design Variations</CardTitle>
               <CardDescription>AI-generated design alternatives based on your parameters</CardDescription>
             </CardHeader>
             <CardContent>
               {variations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {variations.map((variation) => (
-                    <Card key={variation.id} className="bg-gray-700 border-gray-600 hover:bg-gray-650 transition-colors cursor-pointer">
+                    <Card key={variation.id} className="bg-gray-700 border-gray-600 hover:bg-gray-650 transition-colors">
                       <CardContent className="p-4">
                         <div className="text-center mb-3">
                           <div className="text-4xl mb-2">{variation.preview}</div>
@@ -252,15 +295,15 @@ export const ParametricStudio = () => {
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-400">Height:</span>
-                            <span className="text-white">{variation.parameters.height}ft</span>
+                            <span className="text-white">{Math.round(variation.parameters.height)}ft</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Area:</span>
-                            <span className="text-white">{variation.parameters.area}sf</span>
+                            <span className="text-white">{Math.round(variation.parameters.area)}sf</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Windows:</span>
-                            <span className="text-white">{variation.parameters.windows}%</span>
+                            <span className="text-white">{Math.round(variation.parameters.windows)}%</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-400">Cost:</span>
@@ -274,16 +317,31 @@ export const ParametricStudio = () => {
                           </Badge>
                           <div className="text-right">
                             <div className="text-white font-semibold">{variation.score}/10</div>
-                            <div className="text-gray-400 text-xs">Design Score</div>
+                            <div className="text-gray-400 text-xs">AI Score</div>
                           </div>
                         </div>
 
+                        <div className="mt-3 space-y-1 text-xs text-gray-400">
+                          {variation.features.map((feature: string, index: number) => (
+                            <div key={index}>• {feature}</div>
+                          ))}
+                        </div>
+
                         <div className="mt-3 flex gap-2">
-                          <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                            <Play className="mr-1 h-3 w-3" />
+                          <Button 
+                            size="sm" 
+                            className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            onClick={() => handleViewDesign(variation)}
+                          >
+                            <Eye className="mr-1 h-3 w-3" />
                             View
                           </Button>
-                          <Button size="sm" variant="outline" className="border-gray-600 text-white hover:bg-gray-600">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="border-gray-600 text-white hover:bg-gray-600"
+                            onClick={() => handleDownloadDesign(variation)}
+                          >
                             <Download className="h-3 w-3" />
                           </Button>
                         </div>
@@ -295,7 +353,7 @@ export const ParametricStudio = () => {
                 <div className="flex items-center justify-center h-64 text-gray-500">
                   <div className="text-center">
                     <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Adjust parameters and generate variations to see results</p>
+                    <p>Adjust parameters and generate variations to see AI-powered results</p>
                   </div>
                 </div>
               )}
@@ -303,6 +361,14 @@ export const ParametricStudio = () => {
           </Card>
         </div>
       </div>
+
+      {/* Design Viewer Modal */}
+      {selectedDesign && (
+        <ParametricDesignViewer 
+          design={selectedDesign}
+          onClose={() => setSelectedDesign(null)}
+        />
+      )}
     </div>
   );
 };

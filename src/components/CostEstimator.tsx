@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DollarSign, Calculator, TrendingUp, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,9 +15,39 @@ export const CostEstimator = () => {
     stories: "",
     buildingType: "",
     qualityLevel: "",
-    location: ""
+    location: "",
+    foundationType: "",
+    roofType: "",
+    hvacType: "",
+    electricalLoad: "",
+    plumbingFixtures: ""
   });
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [costResults, setCostResults] = useState<any>(null);
+
+  const addOnOptions = [
+    { id: "solar", name: "Solar Panel System", cost: 25000, description: "15kW solar installation" },
+    { id: "pool", name: "Swimming Pool", cost: 35000, description: "In-ground pool with equipment" },
+    { id: "elevator", name: "Residential Elevator", cost: 45000, description: "2-stop residential elevator" },
+    { id: "fireplace", name: "Gas Fireplace", cost: 3500, description: "Ventless gas fireplace insert" },
+    { id: "deck", name: "Composite Deck", cost: 8000, description: "400 sq ft composite decking" },
+    { id: "garage", name: "Detached Garage", cost: 18000, description: "2-car detached garage" },
+    { id: "landscaping", name: "Professional Landscaping", cost: 12000, description: "Complete yard design" },
+    { id: "security", name: "Security System", cost: 4500, description: "Cameras, alarms, monitoring" },
+    { id: "smart_home", name: "Smart Home Package", cost: 8500, description: "Automated lighting, climate, locks" },
+    { id: "wine_cellar", name: "Wine Cellar", cost: 15000, description: "Climate-controlled wine storage" }
+  ];
+
+  const repairOptions = [
+    { id: "roof_repair", name: "Roof Replacement", cost: 15000, description: "Complete roof replacement" },
+    { id: "hvac_repair", name: "HVAC System Upgrade", cost: 8000, description: "New furnace and AC unit" },
+    { id: "electrical_repair", name: "Electrical Panel Upgrade", cost: 3500, description: "200-amp electrical panel" },
+    { id: "plumbing_repair", name: "Plumbing Renovation", cost: 12000, description: "Re-pipe entire house" },
+    { id: "foundation_repair", name: "Foundation Repair", cost: 20000, description: "Foundation stabilization" },
+    { id: "siding_repair", name: "Exterior Siding", cost: 18000, description: "Vinyl siding replacement" },
+    { id: "window_repair", name: "Window Replacement", cost: 12000, description: "Energy-efficient windows" },
+    { id: "flooring_repair", name: "Flooring Upgrade", cost: 8000, description: "Hardwood flooring installation" }
+  ];
 
   const handleCalculate = async () => {
     if (!projectData.area || !projectData.buildingType) {
@@ -27,38 +57,52 @@ export const CostEstimator = () => {
 
     setIsCalculating(true);
     try {
-      // Simulate cost calculation
+      // Simulate cost calculation with AI analysis
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const area = parseInt(projectData.area);
       const baseRate = getBaseRate(projectData.buildingType, projectData.qualityLevel);
       const locationMultiplier = getLocationMultiplier(projectData.location);
       
+      const addOnCosts = selectedAddOns.reduce((total, addOnId) => {
+        const addOn = [...addOnOptions, ...repairOptions].find(option => option.id === addOnId);
+        return total + (addOn?.cost || 0);
+      }, 0);
+
+      const baseCost = Math.round(area * baseRate * locationMultiplier);
+      const totalCost = baseCost + addOnCosts;
+      
       const mockResults = {
-        totalCost: Math.round(area * baseRate * locationMultiplier),
+        totalCost: totalCost,
+        baseCost: baseCost,
+        addOnCosts: addOnCosts,
         costPerSqFt: Math.round(baseRate * locationMultiplier),
         breakdown: {
-          sitework: Math.round(area * baseRate * 0.08 * locationMultiplier),
-          foundation: Math.round(area * baseRate * 0.12 * locationMultiplier),
-          framing: Math.round(area * baseRate * 0.18 * locationMultiplier),
-          roofing: Math.round(area * baseRate * 0.08 * locationMultiplier),
-          exterior: Math.round(area * baseRate * 0.15 * locationMultiplier),
-          interior: Math.round(area * baseRate * 0.25 * locationMultiplier),
-          mechanical: Math.round(area * baseRate * 0.14 * locationMultiplier)
+          sitework: Math.round(baseCost * 0.08),
+          foundation: Math.round(baseCost * 0.12),
+          framing: Math.round(baseCost * 0.18),
+          roofing: Math.round(baseCost * 0.08),
+          exterior: Math.round(baseCost * 0.15),
+          interior: Math.round(baseCost * 0.25),
+          mechanical: Math.round(baseCost * 0.14)
         },
         materials: [
-          { item: "Concrete", quantity: "120 CY", unitCost: 150, total: 18000 },
-          { item: "Steel Framing", quantity: "8,500 lbs", unitCost: 0.75, total: 6375 },
-          { item: "Roofing Shingles", quantity: "35 squares", unitCost: 120, total: 4200 },
-          { item: "Drywall", quantity: "6,400 SF", unitCost: 1.80, total: 11520 },
-          { item: "Flooring", quantity: "3,200 SF", unitCost: 4.50, total: 14400 }
+          { item: "Concrete", quantity: `${Math.round(area * 0.15)} CY`, unitCost: 150, total: Math.round(area * 0.15 * 150) },
+          { item: "Steel Framing", quantity: `${Math.round(area * 8)} lbs`, unitCost: 0.75, total: Math.round(area * 8 * 0.75) },
+          { item: "Roofing Material", quantity: `${Math.round(area / 100)} squares`, unitCost: 120, total: Math.round(area / 100 * 120) },
+          { item: "Drywall", quantity: `${Math.round(area * 2.5)} SF`, unitCost: 1.80, total: Math.round(area * 2.5 * 1.80) },
+          { item: "Flooring", quantity: `${Math.round(area * 0.8)} SF`, unitCost: 4.50, total: Math.round(area * 0.8 * 4.50) },
+          { item: "Windows", quantity: `${Math.round(area / 100)} units`, unitCost: 450, total: Math.round(area / 100 * 450) },
+          { item: "Insulation", quantity: `${Math.round(area * 1.2)} SF`, unitCost: 2.25, total: Math.round(area * 1.2 * 2.25) },
+          { item: "Electrical Wire", quantity: `${Math.round(area / 10)} ft`, unitCost: 1.50, total: Math.round(area / 10 * 1.50) }
         ],
-        timeline: "12-16 months",
-        contingency: Math.round(area * baseRate * locationMultiplier * 0.1)
+        timeline: getProjectTimeline(area, selectedAddOns.length),
+        contingency: Math.round(totalCost * 0.1),
+        aiRecommendations: generateAIRecommendations(projectData, selectedAddOns)
       };
 
       setCostResults(mockResults);
-      toast.success("Cost estimate completed!");
+      toast.success("Cost estimate completed with AI analysis!");
     } catch (error) {
       toast.error("Cost calculation failed. Please try again.");
     } finally {
@@ -101,6 +145,32 @@ export const CostEstimator = () => {
     return locationMultipliers[city] || 1.0;
   };
 
+  const getProjectTimeline = (area: number, addOnCount: number) => {
+    const baseMonths = Math.round(area / 1000 * 4);
+    const addOnMonths = addOnCount * 0.5;
+    const totalMonths = baseMonths + addOnMonths;
+    return `${Math.round(totalMonths)}-${Math.round(totalMonths + 2)} months`;
+  };
+
+  const generateAIRecommendations = (data: any, addOns: string[]) => {
+    const recommendations = [];
+    
+    if (parseInt(data.area) > 3000) {
+      recommendations.push("Consider zoned HVAC system for large area");
+    }
+    if (data.location.toLowerCase().includes('california')) {
+      recommendations.push("Solar panels recommended for energy savings");
+    }
+    if (addOns.includes('pool')) {
+      recommendations.push("Pool requires additional electrical and plumbing permits");
+    }
+    if (data.qualityLevel === 'luxury') {
+      recommendations.push("Luxury finishes may extend timeline by 20%");
+    }
+    
+    return recommendations;
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -108,6 +178,14 @@ export const CostEstimator = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handleAddOnToggle = (addOnId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedAddOns(prev => [...prev, addOnId]);
+    } else {
+      setSelectedAddOns(prev => prev.filter(id => id !== addOnId));
+    }
   };
 
   return (
@@ -193,6 +271,50 @@ export const CostEstimator = () => {
               />
             </div>
 
+            <div className="space-y-4">
+              <h4 className="text-white font-semibold">Additional Features</h4>
+              <div className="grid grid-cols-1 gap-3 max-h-48 overflow-y-auto">
+                {addOnOptions.map((addOn) => (
+                  <div key={addOn.id} className="flex items-start space-x-3 p-2 bg-gray-700 rounded">
+                    <Checkbox 
+                      id={addOn.id}
+                      checked={selectedAddOns.includes(addOn.id)}
+                      onCheckedChange={(checked) => handleAddOnToggle(addOn.id, checked as boolean)}
+                    />
+                    <div className="flex-1">
+                      <label htmlFor={addOn.id} className="text-white text-sm font-medium cursor-pointer">
+                        {addOn.name}
+                      </label>
+                      <p className="text-gray-400 text-xs">{addOn.description}</p>
+                      <p className="text-green-400 text-xs font-medium">{formatCurrency(addOn.cost)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-white font-semibold">Repairs & Upgrades</h4>
+              <div className="grid grid-cols-1 gap-3 max-h-48 overflow-y-auto">
+                {repairOptions.map((repair) => (
+                  <div key={repair.id} className="flex items-start space-x-3 p-2 bg-gray-700 rounded">
+                    <Checkbox 
+                      id={repair.id}
+                      checked={selectedAddOns.includes(repair.id)}
+                      onCheckedChange={(checked) => handleAddOnToggle(repair.id, checked as boolean)}
+                    />
+                    <div className="flex-1">
+                      <label htmlFor={repair.id} className="text-white text-sm font-medium cursor-pointer">
+                        {repair.name}
+                      </label>
+                      <p className="text-gray-400 text-xs">{repair.description}</p>
+                      <p className="text-orange-400 text-xs font-medium">{formatCurrency(repair.cost)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <Button 
               onClick={handleCalculate} 
               disabled={isCalculating}
@@ -229,7 +351,23 @@ export const CostEstimator = () => {
                   <p className="text-sm text-gray-400">
                     {formatCurrency(costResults.costPerSqFt)}/sq ft
                   </p>
+                  {costResults.addOnCosts > 0 && (
+                    <p className="text-sm text-blue-400 mt-2">
+                      Includes {formatCurrency(costResults.addOnCosts)} in add-ons
+                    </p>
+                  )}
                 </div>
+
+                {costResults.aiRecommendations && (
+                  <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-3">
+                    <h4 className="text-blue-400 font-semibold mb-2">AI Recommendations</h4>
+                    <ul className="text-blue-300 text-sm space-y-1">
+                      {costResults.aiRecommendations.map((rec: string, index: number) => (
+                        <li key={index}>• {rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <h4 className="text-white font-semibold">Cost Breakdown</h4>
