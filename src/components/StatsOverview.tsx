@@ -39,12 +39,12 @@ export const StatsOverview = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {stats.map((stat, index) => (
-        <Card key={index} className="bg-gray-800/50 border-gray-700">
+        <Card key={index} className="widget-bg">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">{stat.title}</p>
-                <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                <p className="text-muted-foreground text-sm font-medium">{stat.title}</p>
+                <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
               </div>
               <stat.icon className={`h-8 w-8 ${stat.color}`} />
             </div>
@@ -54,3 +54,4 @@ export const StatsOverview = () => {
     </div>
   );
 };
+
