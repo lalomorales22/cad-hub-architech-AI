@@ -10,6 +10,11 @@ import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { ToolPalette } from "@/components/ToolPalette";
 import { TextToCAD } from "@/components/TextToCAD";
 import { ImageToCAD } from "@/components/ImageToCAD";
+import { BlueprintGenerator } from "@/components/BlueprintGenerator";
+import { StructuralAnalysis } from "@/components/StructuralAnalysis";
+import { CodeChecker } from "@/components/CodeChecker";
+import { CostEstimator } from "@/components/CostEstimator";
+import { ParametricStudio } from "@/components/ParametricStudio";
 import { SettingsPage } from "@/components/SettingsPage";
 import { HelpPage } from "@/components/HelpPage";
 import { ProfilePage } from "@/components/ProfilePage";
@@ -98,6 +103,21 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
 
       case "image-to-cad":
         return <ImageToCAD />;
+
+      case "blueprint-generator":
+        return <BlueprintGenerator />;
+
+      case "structural-analysis":
+        return <StructuralAnalysis />;
+
+      case "code-checker":
+        return <CodeChecker />;
+
+      case "cost-estimator":
+        return <CostEstimator />;
+
+      case "parametric-studio":
+        return <ParametricStudio />;
 
       case "settings":
         return <SettingsPage />;

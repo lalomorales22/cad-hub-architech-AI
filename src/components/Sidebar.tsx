@@ -1,20 +1,25 @@
-
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader } from "@/components/ui/card";
+import { ProjectDialog } from "@/components/ProjectDialog";
+import { DatabaseManager } from "@/lib/database";
 import { 
-  Home, 
-  FolderOpen, 
-  Plus, 
-  Image, 
-  Settings, 
+  Building,
+  Layout,
+  Box,
+  Folder,
+  FileText,
+  Grid3X3,
+  MessageSquare,
+  Camera,
+  Calculator,
+  Shield,
+  DollarSign,
+  Zap,
+  Settings,
   HelpCircle,
-  Bell,
-  Clock,
-  User
+  User,
+  ChevronDown
 } from "lucide-react";
 
 interface SidebarProps {
@@ -27,177 +32,177 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ collapsed, activeProject, onProjectSelect, onNavigate, currentView, theme }: SidebarProps) => {
-  const [showProfile, setShowProfile] = useState(false);
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
 
-  const menuItems = [
-    { 
-      title: "WORKSPACE", 
-      items: [
-        { name: "Dashboard", icon: Home, view: "dashboard", active: currentView === "dashboard", notifications: 0 },
-        { name: "Projects", icon: FolderOpen, view: "projects", active: currentView === "projects", notifications: 3 },
-        { name: "Recent Files", icon: Clock, view: "files", active: currentView === "files", notifications: 0 }
-      ] 
-    },
-    { 
-      title: "CREATE", 
-      items: [
-        { name: "Text-to-CAD", icon: Plus, view: "text-to-cad", active: currentView === "text-to-cad", notifications: 0 },
-        { name: "Image-to-CAD", icon: Image, view: "image-to-cad", active: currentView === "image-to-cad", notifications: 0 }
-      ] 
-    },
-    { 
-      title: "TOOLS", 
-      items: [
-        { name: "Settings", icon: Settings, view: "settings", active: currentView === "settings", notifications: 0 },
-        { name: "Help", icon: HelpCircle, view: "help", active: currentView === "help", notifications: 0 }
-      ] 
-    }
+  const projects = DatabaseManager.getProjects();
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: Layout },
+    { id: "workspace", label: "3D Workspace", icon: Box },
+    { id: "projects", label: "Projects", icon: Folder },
+    { id: "files", label: "File Manager", icon: FileText },
+    { id: "templates", label: "Templates", icon: Grid3X3 },
   ];
 
-  // Theme-based styles
-  const sidebarBg = theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-950 border-gray-800';
-  const textPrimary = theme === 'light' ? 'text-gray-900' : 'text-white';
-  const textSecondary = theme === 'light' ? 'text-gray-600' : 'text-gray-400';
-  const textMuted = theme === 'light' ? 'text-gray-500' : 'text-gray-400';
-  const separatorColor = theme === 'light' ? 'bg-gray-200' : 'bg-gray-800';
-  const hoverBg = theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800/60';
-  const activeBg = theme === 'light' ? 'bg-gray-100 text-gray-900' : 'bg-gray-800/80 text-white';
+  const aiTools = [
+    { id: "text-to-cad", label: "Text to CAD", icon: MessageSquare },
+    { id: "image-to-cad", label: "Image to CAD", icon: Camera },
+    { id: "blueprint-generator", label: "AI Blueprints", icon: FileText },
+    { id: "structural-analysis", label: "Structural Analysis", icon: Calculator },
+    { id: "code-checker", label: "Code Compliance", icon: Shield },
+    { id: "cost-estimator", label: "Cost Estimator", icon: DollarSign },
+    { id: "parametric-studio", label: "Parametric Design", icon: Zap },
+  ];
+
+  const settingsItems = [
+    { id: "settings", label: "Settings", icon: Settings },
+    { id: "help", label: "Help & Support", icon: HelpCircle },
+    { id: "profile", label: "Profile", icon: User },
+  ];
+
+  const themeClasses = theme === 'light'
+    ? 'bg-gray-100 text-gray-900 border-gray-300'
+    : 'bg-gray-800 text-gray-300 border-gray-700';
+
+  const sidebarClasses = theme === 'light'
+    ? 'bg-white border-r'
+    : 'bg-gray-900 border-r border-gray-700';
+
+  const renderNavItem = (item: { id: string; label: string; icon: any }) => (
+    <Button
+      key={item.id}
+      variant="ghost"
+      className={`w-full justify-start ${currentView === item.id
+        ? theme === 'light'
+          ? 'bg-blue-100 text-blue-900'
+          : 'bg-blue-900 text-blue-100'
+        : theme === 'light'
+          ? 'hover:bg-gray-100 text-gray-700'
+          : 'hover:bg-gray-800 text-gray-300'
+        }`}
+      onClick={() => onNavigate(item.id)}
+    >
+      <item.icon className="h-4 w-4 mr-2" />
+      {!collapsed && <span>{item.label}</span>}
+    </Button>
+  );
 
   return (
-    <div className={cn(
-      "border-r flex flex-col transition-all duration-300 relative",
-      sidebarBg,
-      collapsed ? "w-16" : "w-72"
-    )}>
-      {/* Logo/Brand */}
-      <div className="p-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">CH</span>
-          </div>
-          {!collapsed && (
-            <div>
-              <h1 className={`text-xl font-bold tracking-wider ${textPrimary}`}>CAD HUB</h1>
-              <p className={`text-xs ${textMuted}`}>Professional Edition</p>
+    <>
+      <div className={`${collapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${sidebarClasses} flex flex-col`}>
+        {/* Logo Section */}
+        <div className="p-4 border-b border-gray-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <Building className="h-5 w-5 text-white" />
             </div>
-          )}
-        </div>
-      </div>
-
-      <Separator className={separatorColor} />
-
-      {/* Navigation Menu */}
-      <div className="flex-1 p-4 space-y-6 overflow-y-auto">
-        {menuItems.map((section, index) => (
-          <div key={index} className="space-y-2">
             {!collapsed && (
-              <h3 className={`text-xs font-semibold tracking-wider px-2 ${textMuted}`}>
-                {section.title}
-              </h3>
+              <div>
+                <h1 className={`font-bold text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                  ArchitectAI
+                </h1>
+                <p className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                  AI Design Studio
+                </p>
+              </div>
             )}
-            <div className="space-y-1">
-              {section.items.map((item) => (
-                <Button
-                  key={item.name}
-                  variant="ghost"
-                  onClick={() => onNavigate(item.view)}
-                  className={cn(
-                    `w-full justify-start ${textSecondary} ${hoverBg}`,
-                    collapsed ? "px-2 justify-center" : "px-3",
-                    item.active && activeBg
-                  )}
-                >
-                  <item.icon className={cn("h-4 w-4", !collapsed && "mr-3")} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-left">{item.name}</span>
-                      {item.notifications > 0 && (
-                        <Badge variant="secondary" className="bg-cyan-600 text-white text-xs px-1.5 py-0">
-                          {item.notifications}
-                        </Badge>
-                      )}
-                    </>
-                  )}
-                </Button>
-              ))}
-            </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <Separator className={separatorColor} />
+        {/* Main Navigation */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-3 space-y-1">
+            <div className={`text-xs font-semibold mb-3 ${collapsed ? 'hidden' : 'block'} ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} uppercase tracking-wide`}>
+              Navigation
+            </div>
+            {navItems.map((item) => renderNavItem(item))}
+          </div>
 
-      {/* User Profile */}
-      <div className="p-4">
-        <div 
-          className={`flex items-center space-x-3 cursor-pointer p-2 rounded-lg transition-colors ${hoverBg}`}
-          onClick={() => setShowProfile(!showProfile)}
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-600 text-white font-semibold">
-              CH
-            </AvatarFallback>
-          </Avatar>
+          {/* AI Tools Section */}
+          <div className="p-3 space-y-1">
+            <div className={`text-xs font-semibold mb-3 ${collapsed ? 'hidden' : 'block'} ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} uppercase tracking-wide`}>
+              AI Tools
+            </div>
+            {aiTools.map((item) => renderNavItem(item))}
+          </div>
+
+          {/* Active Project Section */}
           {!collapsed && (
-            <div className="flex-1">
-              <p className={`font-medium ${textPrimary}`}>Corey Hilton</p>
-              <p className={`text-sm ${textMuted}`}>Senior Architect</p>
+            <div className="p-3">
+              <div className={`text-xs font-semibold mb-3 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} uppercase tracking-wide`}>
+                Current Project
+              </div>
+              <Card className={theme === 'light' ? 'bg-gray-100 border-gray-300' : 'bg-gray-800 border-gray-700'}>
+                <CardHeader className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-medium text-sm truncate ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                        {activeProject}
+                      </h3>
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                        In Progress
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowProjectDialog(true)}
+                      className={`${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} p-1`}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+              </Card>
             </div>
           )}
+
+          {/* Recent Projects */}
           {!collapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`${textSecondary} hover:${textPrimary}`}
-            >
-              <Bell className="h-4 w-4" />
-            </Button>
+            <div className="p-3">
+              <div className={`text-xs font-semibold mb-3 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} uppercase tracking-wide`}>
+                Recent Projects
+              </div>
+              <div className="space-y-1">
+                {projects.slice(0, 3).map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => onProjectSelect(project.name)}
+                    className={`w-full text-left p-2 rounded-lg text-sm transition-colors ${
+                      project.name === activeProject
+                        ? theme === 'light' 
+                          ? 'bg-blue-100 text-blue-900' 
+                          : 'bg-blue-900 text-blue-100'
+                        : theme === 'light'
+                          ? 'hover:bg-gray-100 text-gray-700'
+                          : 'hover:bg-gray-800 text-gray-300'
+                    }`}
+                  >
+                    <div className="truncate font-medium">{project.name}</div>
+                    <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'}`}>
+                      {project.type}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
+        </div>
+
+        {/* Settings Section */}
+        <div className="border-t border-gray-700 p-3 space-y-1">
+          {settingsItems.map((item) => renderNavItem(item))}
         </div>
       </div>
 
-      {/* Profile Dropdown */}
-      {showProfile && !collapsed && (
-        <div className={`absolute bottom-20 left-4 right-4 border rounded-lg shadow-xl z-50 ${
-          theme === 'light' 
-            ? 'bg-white border-gray-200' 
-            : 'bg-gray-800 border-gray-700'
-        }`}>
-          <div className="p-2">
-            <Button
-              variant="ghost"
-              className={`w-full justify-start ${textSecondary} ${hoverBg}`}
-              onClick={() => {
-                onNavigate("profile");
-                setShowProfile(false);
-              }}
-            >
-              <User className="h-4 w-4 mr-3" />
-              View Profile
-            </Button>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start ${textSecondary} ${hoverBg}`}
-              onClick={() => {
-                onNavigate("settings");
-                setShowProfile(false);
-              }}
-            >
-              <Settings className="h-4 w-4 mr-3" />
-              Settings
-            </Button>
-            <Separator className={`${separatorColor} my-2`} />
-            <Button
-              variant="ghost"
-              className={`w-full justify-start text-red-400 hover:text-red-300 ${
-                theme === 'light' ? 'hover:bg-red-50' : 'hover:bg-red-900/20'
-              }`}
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* Project Selection Dialog */}
+      <ProjectDialog
+        open={showProjectDialog}
+        onOpenChange={setShowProjectDialog}
+        projects={projects}
+        activeProject={activeProject}
+        onProjectSelect={onProjectSelect}
+      />
+    </>
   );
 };
