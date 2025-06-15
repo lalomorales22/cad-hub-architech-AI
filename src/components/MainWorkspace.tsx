@@ -49,12 +49,23 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
   const [showChat, setShowChat] = useState(false);
   const [showImporter, setShowImporter] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
-  const [sceneObjects, setSceneObjects] = useState<SceneObject[]>([]);
+  const [projectScenes, setProjectScenes] = useState<Record<string, SceneObject[]>>({});
   const [selectedObjectId, setSelectedObjectId] = useState<string>();
   const [selectedTool, setSelectedTool] = useState("select");
   const [cadData, setCadData] = useState(null);
   
   const { getCurrentProjectId } = useProject();
+
+  // Get current project's scene objects
+  const sceneObjects = projectScenes[activeProject] || [];
+
+  // Update scene objects for current project
+  const setSceneObjects = (updater: (prev: SceneObject[]) => SceneObject[]) => {
+    setProjectScenes(prev => ({
+      ...prev,
+      [activeProject]: updater(prev[activeProject] || [])
+    }));
+  };
 
   // Apply theme classes to the workspace
   const themeClasses = theme === 'light' 
@@ -150,9 +161,9 @@ export const MainWorkspace = ({ activeProject, currentView, theme }: MainWorkspa
   const handleSaveScene = () => {
     const projectId = getCurrentProjectId();
     if (projectId) {
-      // Here you would save to your database/storage
-      console.log('Saving scene for project:', projectId, sceneObjects);
-      toast.success("Scene saved successfully!");
+      // Here you would save to your database/storage with project-specific data
+      console.log('Saving scene for project:', activeProject, sceneObjects);
+      toast.success(`Scene saved for ${activeProject}!`);
     }
   };
 
