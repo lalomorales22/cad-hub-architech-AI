@@ -121,8 +121,7 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           } else {
             result = await advancedAI.falAI.generate3DModel(prompt, {
               style: falStyle,
-              quality: falQuality as 'low' | 'medium' | 'high',
-              model: selectedModel
+              quality: falQuality as 'low' | 'medium' | 'high'
             });
           }
           break;
@@ -131,8 +130,7 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           result = await advancedAI.stabilityAI.generateImage(prompt, {
             width: parseInt(imageSize),
             height: parseInt(imageSize),
-            style: stabilityStyle,
-            model: selectedModel
+            style: stabilityStyle
           });
           break;
           
@@ -140,7 +138,7 @@ export const AdvancedAIWidget = ({ onGenerate, onClose, theme }: AdvancedAIWidge
           if (selectedModel === '3d-generation') {
             result = await advancedAI.replicate.generate3DFromText(prompt);
           } else {
-            result = await advancedAI.replicate.processWithModel(selectedModel, prompt);
+            result = await advancedAI.replicate.processModel(selectedModel, prompt);
           }
           break;
           

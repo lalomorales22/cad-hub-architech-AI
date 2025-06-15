@@ -7,9 +7,11 @@ import { ModelImporter } from './ModelImporter';
 
 interface MainWorkspaceProps {
   theme: 'dark' | 'light';
+  activeProject?: string;
+  currentView?: string;
 }
 
-export const MainWorkspace = ({ theme }: MainWorkspaceProps) => {
+export const MainWorkspace = ({ theme, activeProject, currentView }: MainWorkspaceProps) => {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [showAIAgent, setShowAIAgent] = useState(false);
   const [showChat, setShowChat] = useState(false);

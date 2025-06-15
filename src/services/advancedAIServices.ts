@@ -199,6 +199,50 @@ export class ReplicateService {
     }
   }
 
+  async processModel(modelId: string, input: string): Promise<any> {
+    const apiKey = this.getAPIKey();
+    if (!apiKey) {
+      toast.error("Replicate API key not found. Please add it in Settings.");
+      throw new Error("Replicate API key required");
+    }
+
+    try {
+      const response = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: this.getModelVersion(modelId),
+          input: {
+            prompt: input,
+            ...(modelId === 'image-upscaling' ? { image: input } : {})
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Replicate API error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Replicate model processing error:', error);
+      toast.error("Failed to process with Replicate model");
+      throw error;
+    }
+  }
+
+  private getModelVersion(modelId: string): string {
+    const modelVersions: { [key: string]: string } = {
+      '3d-generation': "685265c04b63e0f05b34e1e12ddc2e59b9c6de5b6fe2c23d41d3e6b21e2df78a",
+      'image-upscaling': "upscaling-model-version-id",
+      'style-transfer': "style-transfer-model-version-id"
+    };
+    return modelVersions[modelId] || modelVersions['3d-generation'];
+  }
+
   async processPointCloud(pointCloudData: any): Promise<any> {
     const apiKey = this.getAPIKey();
     if (!apiKey) {
