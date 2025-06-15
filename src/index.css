@@ -7,7 +7,7 @@
 
 @layer base {
   :root {
-    /* Light theme - Pure whites and beiges with blue accents */
+    /* Light theme - Pure whites and beiges with subtle accents */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
 
@@ -17,8 +17,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 0%;
 
     --secondary: 30 40% 98%;
     --secondary-foreground: 0 0% 0%;
@@ -34,18 +34,18 @@
 
     --border: 30 20% 90%;
     --input: 30 20% 95%;
-    --ring: 217.2 91.2% 59.8%;
+    --ring: 0 0% 85%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 95%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 30 30% 96%;
     --sidebar-accent-foreground: 0 0% 0%;
     --sidebar-border: 30 20% 90%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 0 0% 85%;
   }
 
   .dark {
