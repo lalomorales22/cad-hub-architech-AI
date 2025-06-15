@@ -12,8 +12,8 @@ import {
   Sofa,
   Lightbulb,
   Car,
-  Stairs,
-  Door,
+  ArrowUp,
+  Square,
   Ruler,
   Move3D,
   RotateCcw,
@@ -53,9 +53,9 @@ export const EnhancedToolPalette = ({ theme, onToolSelect, onAIGenerate, onImpor
       label: "Architecture",
       tools: [
         { id: "wall", icon: Home, label: "Wall", desc: "Create walls" },
-        { id: "door", icon: Door, label: "Door", desc: "Add doors" },
+        { id: "door", icon: Square, label: "Door", desc: "Add doors" },
         { id: "window", icon: Grid3X3, label: "Window", desc: "Add windows" },
-        { id: "stairs", icon: Stairs, label: "Stairs", desc: "Create stairs" },
+        { id: "stairs", icon: ArrowUp, label: "Stairs", desc: "Create stairs" },
         { id: "roof", icon: Home, label: "Roof", desc: "Add roof" },
       ]
     },
